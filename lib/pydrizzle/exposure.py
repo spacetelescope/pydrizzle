@@ -21,7 +21,7 @@ from __future__ import division # confidence medium
 import os
 import buildmask, drutil, arrdriz
 from obsgeometry import ObsGeometry
-from pytools import fileutil, wcsutil
+from stsci.tools import fileutil, wcsutil
 from math import ceil,floor
 
 import numpy as np

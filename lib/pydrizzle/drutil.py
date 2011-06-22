@@ -16,14 +16,14 @@ tasks.
 #
 from __future__ import division # confidence medium
 
-import string,os,types
+import os
 from math import ceil,floor
 
 import numpy as np
 from numpy import linalg
 
-from pytools import fileutil
-from pytools.fileutil import buildRotMatrix
+from stsci.tools import fileutil
+from stsci.tools.fileutil import buildRotMatrix
 
 # Convenience definitions
 DEGTORAD = fileutil.DEGTORAD
@@ -133,7 +133,7 @@ def getIDCFile(image,keyword="",directory=None):
     #
 
 
-    if isinstance(image, types.StringType):
+    if isinstance(image, basestring):
         # We were provided an image name, so read in the header...
         header = fileutil.getHeader(image)
     else:
@@ -145,7 +145,7 @@ def getIDCFile(image,keyword="",directory=None):
         if (idcfile == None):
             idcfile,idctype = __buildIDCTAB(header,directory)
 
-    elif string.lower(keyword) == 'idctab':
+    elif keyword.lower() == 'idctab':
         # keyword specifies header keyword with IDCTAB name
         idcfile,idctype = __getIDCTAB(header)
 
@@ -199,10 +199,10 @@ def __buildIDCTAB(header, directory, kw = 'cubic'):
             detname = 'pc'
         else:
             detname = 'wf'
-        idcfile = default_dir+detname+str(detector)+'-'+string.lower(keyword)
+        idcfile = default_dir+detname+str(detector)+'-'+keyword.lower()
 
     elif instrument == 'STIS':
-        idcfile = default_dir+'stis-'+string.lower(detector)
+        idcfile = default_dir+'stis-'+detector.lower()
 
     elif instrument == 'NICMOS':
         if detector != None:
@@ -239,7 +239,7 @@ def getIDCFileType(idcfile):
     while _line[0] == '#':
         _line = fileutil.rAsciiLine(ifile)
 
-    _type = string.rstrip(_line.lower())
+    _type = _line.lower().rstrip()
 
     if _type in ['cubic','quartic','quintic'] or _type.find('poly') > -1:
         _type = 'cubic'

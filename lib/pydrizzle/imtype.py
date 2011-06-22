@@ -1,7 +1,7 @@
 from __future__ import division # confidence high
 import types
 import pyfits
-from pytools import fileutil
+from stsci.tools import fileutil
 
 class Imtype:
     """ Class which determines the format of the file, how to access the

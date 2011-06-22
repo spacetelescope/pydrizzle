@@ -3,7 +3,7 @@ import types,string,os,copy
 from math import ceil,floor
 
 # Import PyDrizzle utility modules
-from pytools import fileutil, wcsutil
+from stsci.tools import fileutil, wcsutil
 from distortion import models,mutil
 
 import numpy as np

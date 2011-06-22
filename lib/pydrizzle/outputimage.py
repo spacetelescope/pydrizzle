@@ -1,7 +1,7 @@
 from __future__ import division # confidence medium
 import types
 import pyfits
-from pytools import fileutil, readgeis
+from stsci.tools import fileutil, readgeis
 
 yes = True
 no = False

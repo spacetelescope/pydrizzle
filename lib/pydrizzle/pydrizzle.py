@@ -1,6 +1,6 @@
 from __future__ import division # confidence medium
 from drutil import DEFAULT_IDCDIR
-from pytools import fileutil, wcsutil, asnutil
+from stsci.tools import fileutil, wcsutil, asnutil
 
 import string, os, types, sys
 import shutil
@@ -8,6 +8,9 @@ import arrdriz
 import outputimage
 from pattern import *
 from observations import *
+
+# Hackish, but not invalid
+from __init__ import __version__
 #import buildasn
 #import p_m_input
 
@@ -21,8 +24,6 @@ no = False  # 0
 _default_pars = {'psize':None,'default_rot':None,'idckey':None}
 
 INSTRUMENT = ["ACS","WFPC2","STIS","NICMOS","WFC3"]
-
-__version__ = "6.3.7 (03-Jan-2011)"
 
 
 class _PyDrizzle:
@@ -92,13 +93,14 @@ Return to default parameters using no parameters at all:
 More help on SkyField objects and their parameters can be obtained using:
     --> f.help()
     """
+
     def __init__(self, input, output=None, field=None, units=None, section=None,
         kernel=None,pixfrac=None,bits_final=0,bits_single=0,
         wt_scl='exptime', fillval=0.,idckey='', in_units='counts',
         idcdir=DEFAULT_IDCDIR,memmap=0,dqsuffix=None):
 
         if idcdir == None: idcdir = DEFAULT_IDCDIR
-        
+
 
         print 'Starting PyDrizzle Version ',__version__,' at ', _ptime()
 
@@ -110,7 +112,7 @@ More help on SkyField objects and their parameters can be obtained using:
         # Insure that the section parameter always becomes a list
         if isinstance(section,list) == False and section != None:
             section = [section]
-            
+
         # Set the default value for 'build'
         self.build = yes
 
@@ -124,11 +126,11 @@ More help on SkyField objects and their parameters can be obtained using:
             psize = None
             orient = None
             orient_rot = 0.
-        
-        #self.pars['orient_rot'] was originaly self.pars['rot']. It is set based on 
-        # orientat but it looks like it is not used. In SkyField.mergeWCS() rot is 
-        #defined again based on orientat. 
-        
+
+        #self.pars['orient_rot'] was originaly self.pars['rot']. It is set based on
+        # orientat but it looks like it is not used. In SkyField.mergeWCS() rot is
+        #defined again based on orientat.
+
         # These can also be set by the user.
         # Minimum set needed: psize, rot, and idckey
         self.pars = {'psize':psize,'units':units,'kernel':kernel,'orient_rot':orient_rot,
@@ -136,12 +138,12 @@ More help on SkyField objects and their parameters can be obtained using:
             'fillval':fillval,'section':section, 'idcdir':idcdir+os.sep,
             'memmap':memmap,'dqsuffix':dqsuffix, 'in_units':in_units,
             'bits':[bits_final,bits_single], 'mt_wcs': None}
-        
+
         # Watch out for any errors.
         # If they arise, all open files need to be closed...
         self.observation = None
         self.parlist = None
-        
+
         if len(asndict['order']) > 1:
             self.observation = DitherProduct(asndict,pars=self.pars)
         else:
@@ -179,17 +181,17 @@ More help on SkyField objects and their parameters can be obtained using:
         # Let the user know parameters have been successfully calculated
         print 'Drizzle parameters have been calculated. Ready to .run()...'
         print 'Finished calculating parameters at ',_ptime()
-    
+
     def translateShifts(self, asndict):
         """
-        Translate the shifts specified in the ASNDICT (as read in from the 
+        Translate the shifts specified in the ASNDICT (as read in from the
         shiftfile) into offsets in the sky, so they can be translated back
         into the WCS of the PyDrizzle output product.
-        
-        NOTE:  Only works with 'delta' shifts now, and 
+
+        NOTE:  Only works with 'delta' shifts now, and
                     requires that a 'refimage' be specified.
         """
-                
+
         # for each set of shifts, translate them into delta(ra,dec) based on refwcs
         for img in asndict['order']:
 
@@ -210,7 +212,7 @@ More help on SkyField objects and their parameters can be obtained using:
                     cp2 = refwcs.crpix2
 
                     nra,ndec = refwcs.xy2rd((cp1+xsh,cp2+ysh))
-                    
+
                     delta_ra = refwcs.crval1-nra
                     delta_dec = refwcs.crval2-ndec
                 else:
@@ -218,10 +220,10 @@ More help on SkyField objects and their parameters can be obtained using:
                     # No conversion necessary
                     delta_ra = xsh
                     delta_dec = ysh
-            
+
             asndict['members'][img]['delta_ra'] = delta_ra
             asndict['members'][img]['delta_dec'] = delta_dec
-            
+
     def clean(self,coeffs=no,final=no):
         """ Removes intermediate products from disk. """
         for img in self.parlist:
@@ -450,7 +452,7 @@ More help on SkyField objects and their parameters can be obtained using:
                 else:
                     # default based on instrument-specific logic
                     _bunit = plist['bunit']
-                
+
                 _bindx = _bunit.find('/')
                 if plist['units'] == 'cps':
                     # If BUNIT value does not specify count rate already...
@@ -458,7 +460,7 @@ More help on SkyField objects and their parameters can be obtained using:
                         # ... append '/SEC' to value
                         _bunit += '/S'
                     else:
-                        # reset _bunit here to None so it does not 
+                        # reset _bunit here to None so it does not
                         #    overwrite what is already in header
                         _bunit = None
                 else:
@@ -466,9 +468,9 @@ More help on SkyField objects and their parameters can be obtained using:
                         # remove '/S'
                         _bunit = _bunit[:_bindx]
                     else:
-                        # reset _bunit here to None so it does not 
+                        # reset _bunit here to None so it does not
                         #    overwrite what is already in header
-                        _bunit = None                 
+                        _bunit = None
 
                 # Compute what plane of the context image this input would
                 # correspond to:
@@ -479,7 +481,7 @@ More help on SkyField objects and their parameters can be obtained using:
                     _mask = plist['single_driz_mask']
                 else:
                     _mask = plist['driz_mask']
-                    
+
                 # Check to see whether there is a mask_array at all to use...
                 if isinstance(_mask,types.StringType):
                     if _mask != None and _mask != '':
@@ -578,7 +580,7 @@ More help on SkyField objects and their parameters can be obtained using:
                 if (_sciext.data.dtype > np.float32):
                     #WARNING: Input array recast as a float32 array
                     _sciext.data = _sciext.data.astype(np.float32)
-                                    
+
                 _vers,nmiss,nskip = arrdriz.tdriz(_sciext.data,_inwht, _outsci, _outwht,
                             _outctx[_planeid], _uniqid, ystart, 1, 1, _dny,
                             plist['xsh'],plist['ysh'], 'output','output',
@@ -613,7 +615,7 @@ More help on SkyField objects and their parameters can be obtained using:
 
                 del _pxg,_pyg
 
-                # Remember the name of the first image that goes into 
+                # Remember the name of the first image that goes into
                 # this particular product
                 # This will insure that the header reports the proper
                 # values for the start of the exposure time used to make
@@ -657,7 +659,7 @@ More help on SkyField objects and their parameters can be obtained using:
                     _outimg = outputimage.OutputImage(_hdrlist, build=build, wcs=_wcs, single=single)
                     _outimg.set_bunit(_bunit)
                     _outimg.set_units(plist['units'])
-                    
+
                     _outimg.writeFITS(_template,_outsci,_outwht,ctxarr=_outctx,versions=_versions)
                     del _outimg
                     #
@@ -993,8 +995,8 @@ class DitherProduct(Pattern):
         # Setup a default exposure to contain the results
         Pattern.__init__(self, None, output=output, pars=pars)
         self.pars = prodlist['members']
-        
-        self.nmembers = self.nimages = len(prodlist['members']) 
+
+        self.nmembers = self.nimages = len(prodlist['members'])
         self.offsets = None
 
         self.addMembers(prodlist,pars,output)
@@ -1006,14 +1008,14 @@ class DitherProduct(Pattern):
         self.exptime = self.getExptime()
 
         self.buildProduct(output)
-    
+
     def closeHandle(self):
         """ Close image handle for each member."""
         for member in self.members:
             member.closeHandle()
-            
-    
-        
+
+
+
     def buildProduct(self,output):
         # Build default Metachip based on unmodified header WCS values
         output_wcs = self.buildMetachip()
@@ -1105,9 +1107,9 @@ class DitherProduct(Pattern):
         For each entry in prodlist, append the appropriate type
         of Observation to the members list.
 
-        If it's a moving target observation apply the wcs of the first 
+        If it's a moving target observation apply the wcs of the first
         observation to  all other observations.
-        """     
+        """
 
         member = prodlist['order'][0]
         filename = fileutil.buildRootname(member)
@@ -1119,10 +1121,10 @@ class DitherProduct(Pattern):
             mt_wcs = {}
             for member in mt_member.members:
                 mt_wcs[member.chip] = member.geometry.wcs
-            
+
             pars['mt_wcs'] = mt_wcs
-            del mt_member   
- 
+            del mt_member
+
         for memname in prodlist['order']:
             pardict = self.pars[memname]
             pardict.update(pars)

@@ -7,7 +7,7 @@ from numpy import char as C
 from math import *
 
 import pydrizzle
-from pytools import wcsutil
+from stsci.tools import wcsutil
 
 # Convenience definitions...
 yes = True

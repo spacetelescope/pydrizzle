@@ -1,6 +1,6 @@
 from __future__ import division # confidence medium
 from pattern import *
-from pytools import fileutil
+from stsci.tools import fileutil
 from distortion import mutil
 import numpy as np
 

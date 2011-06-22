@@ -1,11 +1,11 @@
 from __future__ import division # confidence high
-from pytools import fileutil,wcsutil
+from stsci.tools import fileutil, wcsutil
 import numpy as np
 import string
 import calendar
 import datetime
 
-# Set up IRAF-compatible Boolean values    
+# Set up IRAF-compatible Boolean values
 yes = True
 no = False
 
@@ -30,7 +30,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
         If offtab is specified, dateobs also needs to be given.
 
     """
-  
+
  # Return a default geometry model if no IDCTAB filename
     # is given.  This model will not distort the data in any way.
     if tabname == None:
@@ -63,10 +63,10 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
         err_str += "the Dither Package (ca. 1995-1998).                                      \n"
         err_str += "------------------------------------------------------------------------ \n"
         raise IOError,err_str
-    
+
     phdr = ftab['PRIMARY'].header
     # First, check to see if the TDD coeffs are present, if not, complain and quit
-    skew_coeffs = None    
+    skew_coeffs = None
     if phdr.has_key('TDD_DATE'):
         print 'Reading TDD coefficients from ',tabname
         skew_coeffs = read_tdd_coeffs(phdr)
@@ -74,7 +74,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
         #skew_coeffs = {'TDD_A0':phdr['TDD_A0'],'TDD_A1':phdr["TDD_A1"],
         #            'TDD_B0':phdr['TDD_B0'],'TDD_B1':phdr['TDD_B1'],
         #            'TDD_D0':phdr['TDD_D0'],'TDD_DATE':phdr['TDD_DATE']}
-    
+
     #We need to read in the coefficients from the IDC
     # table and populate the Fx and Fy matrices.
     if phdr.has_key('DETECTOR'):
@@ -205,7 +205,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
     refpix['YDELTA'] = 0.0
     refpix['DEFAULT_SCALE'] = yes
     refpix['centered'] = no
-    
+
     # Now that we know which row to look at, read coefficients into the
     #   numeric arrays we have set up...
     # Setup which column name convention the IDCTAB follows
@@ -230,7 +230,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
 
     # If CX11 is 1.0 and not equal to the PSCALE, then the
     # coeffs need to be scaled
-    
+
     if fx[1,1] == 1.0 and abs(fx[1,1]) != refpix['PSCALE']:
         fx *= refpix['PSCALE']
         fy *= refpix['PSCALE']
@@ -244,15 +244,15 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
     else:
         refpix['TDDALPHA'] = 0.0
         refpix['TDDBETA'] = 0.0
-        
+
     # Return arrays and polynomial order read in from table.
     # NOTE: XREF and YREF are stored in Fx,Fy arrays respectively.
     return fx,fy,refpix,order
 
 def readOfftab(offtab, date, chip=None):
 
- 
-#Read V2REF,V3REF from a specified offset table (OFFTAB). 
+
+#Read V2REF,V3REF from a specified offset table (OFFTAB).
 # Return a default geometry model if no IDCTAB filenam  e
 # is given.  This model will not distort the data in any way.
 
@@ -353,18 +353,18 @@ def readOfftab(offtab, date, chip=None):
     return v2ref,v3ref,theta
 
 def readWCSCoeffs(header):
-   
+
     #Read distortion coeffs from WCS header keywords and
     #populate distortion coeffs arrays.
-        
+
     # Read in order for polynomials
     _xorder = header['a_order']
     _yorder = header['b_order']
     order = max(max(_xorder,_yorder),3)
 
     fx = np.zeros(shape=(order+1,order+1),dtype=np.float64)
-    fy = np.zeros(shape=(order+1,order+1),dtype=np.float64)    
-   
+    fy = np.zeros(shape=(order+1,order+1),dtype=np.float64)
+
     # Set up refpix
     refpix = {}
     refpix['XREF'] = header['crpix1']
@@ -376,7 +376,7 @@ def readWCSCoeffs(header):
         refpix['PAMSCALE'] = header['PAMSCALE']
     else:
         refpix['PSCALE'] = header['IDCSCALE']
-        
+
     refpix['V2REF'] = header['IDCV2REF']
     refpix['V3REF'] = header['IDCV3REF']
     refpix['THETA'] = header['IDCTHETA']
@@ -389,7 +389,7 @@ def readWCSCoeffs(header):
     # Set up template for coeffs keyword names
     cxstr = 'A_'
     cystr = 'B_'
-    
+
     fx[0][0] = 0.0
     fy[0][0] = 0.0
     fx[1][0] = header['OCX10']
@@ -404,7 +404,7 @@ def readWCSCoeffs(header):
             if header.has_key(xcname):
                 fx[i,j] = (fx[1][1]*header[xcname] + fx[1][0]*header[ycname])
                 fy[i,j] = (fy[1][1]*header[xcname] + fy[1][0]*header[ycname])
-        
+
 
     return fx,fy,refpix,order
 
@@ -628,7 +628,7 @@ def read_tdd_coeffs(phdr):
     skew_coeffs['TDDORDER'] = phdr['TDDORDER']
     skew_coeffs['TDD_A'] = []
     skew_coeffs['TDD_B'] = []
-    
+
     # Now read in all TDD coefficient keywords
     for k in range(skew_coeffs['TDDORDER']+1):
         skew_coeffs['TDD_A'].append(phdr['TDD_A'+str(k)])
@@ -637,7 +637,7 @@ def read_tdd_coeffs(phdr):
     return skew_coeffs
 
 def compute_wfc_tdd_coeffs(dateobs,skew_coeffs):
-    ''' Compute the alpha and beta terms for the ACS/WFC 
+    ''' Compute the alpha and beta terms for the ACS/WFC
         time-dependent skew correction as described in
         ACS ISR 07-08 by J. Anderson.
     '''
@@ -671,7 +671,7 @@ def compute_wfc_tdd_coeffs(dateobs,skew_coeffs):
     # with only 3 digits, so this line reproduces that when needed for comparison
     # with his results.
     #rday = float(('%0.3f')%rday)
-    
+
     # The zero-point terms account for the skew accumulated between
     # 2002.0 and 2004.5, when the latest IDCTAB was delivered.
     #alpha = 0.095 + 0.090*(rday-dday)/2.5
@@ -682,13 +682,13 @@ def compute_wfc_tdd_coeffs(dateobs,skew_coeffs):
     for c in range(len(skew_coeffs['TDD_A'])):
         alpha += skew_coeffs['TDD_A'][c]* np.power(rday-skew_coeffs['TDD_DATE'],c)
         beta += skew_coeffs['TDD_B'][c]*np.power(rday-skew_coeffs['TDD_DATE'],c)
-    
+
     return alpha,beta
 
 def apply_wfc_tdd_coeffs(cx,cy,alpha,beta):
     ''' Apply the WFC TDD coefficients directly to the distortion
-        coefficients. 
-    '''    
+        coefficients.
+    '''
     # Initialize variables to be used
     theta_v2v3 = 2.234529
     scale_idc = 0.05
@@ -701,7 +701,7 @@ def apply_wfc_tdd_coeffs(cx,cy,alpha,beta):
     mrotn = fileutil.buildRotMatrix(-idctheta)
     abmat = np.array([[beta,alpha],[alpha,beta]])
     tdd_mat = np.array([[1+(beta/2048.), alpha/2048.],[alpha/2048.,1-(beta/2048.)]],np.float64)
-  
+
     abmat1 = np.dot(tdd_mat, mrotn)
     abmat2 = np.dot(mrotp,abmat1)
     icxy = np.dot(abmat2,[cx.ravel(),cy.ravel()])
@@ -709,10 +709,10 @@ def apply_wfc_tdd_coeffs(cx,cy,alpha,beta):
     icy = icxy[1]
     icx.shape = cx.shape
     icy.shape = cy.shape
-    
+
     return icx,icy
-    
-    
+
+
 def rotate_coeffs(cx,cy,rot,scale=1.0):
     ''' Rotate poly coeffs by 'rot' degrees.
     '''
@@ -722,5 +722,5 @@ def rotate_coeffs(cx,cy,rot,scale=1.0):
     rcy = rcxy[1]
     rcx.shape = cx.shape
     rcy.shape = cy.shape
-    
+
     return rcx,rcy

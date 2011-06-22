@@ -1,5 +1,5 @@
 from __future__ import division # confidence medium
-from pytools import fileutil, wcsutil
+from stsci.tools import fileutil, wcsutil
 import imtype, buildmask
 from exposure import Exposure
 import numpy as np
@@ -7,7 +7,7 @@ import drutil
 
 #from pydrizzle import __version__
 __version__ = '6.xxx'
-from pytools.fileutil import RADTODEG, DEGTORAD
+from stsci.tools.fileutil import RADTODEG, DEGTORAD
 DEFAULT_PARITY = [[1.0,0.0],[0.0,1.0]]
 yes = True
 no = False

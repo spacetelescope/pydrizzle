@@ -1,16 +1,13 @@
 from __future__ import division # confidence high
-from pytools import numerixenv
+from stsci.tools import numerixenv
 numerixenv.check()
-import string
-import pydrizzle
 
 yes = True  # 1
 no = False  # 0
 from drutil import DEFAULT_IDCDIR
 from math import *
 
-# Version string is in pydrizzle.py
-__version__ = pydrizzle.__version__
+__version__ = "6.3.7 (03-Jan-2011)"
 # rvision based version string
 try:
     import svn_version
@@ -25,13 +22,18 @@ def PyDrizzle(input, output=None, field=None, units=None, section=None,
         idcdir=DEFAULT_IDCDIR,memmap=0,dqsuffix=None,prodonly=False,
         shiftfile=None,updatewcs=True):
 
+    import pydrizzle
     import process_input
-    asndict, ivmlist, output = process_input.process_input(input, output=output, prodonly=prodonly, 
-                                                            updatewcs=updatewcs, shiftfile=shiftfile)
+
+    asndict, ivmlist, output = process_input.process_input(
+            input, output=output, prodonly=prodonly, updatewcs=updatewcs,
+            shiftfile=shiftfile)
+
     if not asndict:
         return None
+
     p = pydrizzle._PyDrizzle(asndict, output=output,field=field,
-                             units=units, idckey=idckey, 
+                             units=units, idckey=idckey,
                              section=section, kernel= kernel,
                              pixfrac=pixfrac,
                              bits_single=bits_single,
@@ -41,8 +43,9 @@ def PyDrizzle(input, output=None, field=None, units=None, section=None,
                              idcdir=idcdir, memmap=memmap,
                              dqsuffix=dqsuffix)
 
-    
+
     return p
 
 def help():
+    import pydrizzle
     print pydrizzle._PyDrizzle.__doc__

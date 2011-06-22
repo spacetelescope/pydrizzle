@@ -32,7 +32,7 @@ from __future__ import division # confidence high
 #
 import string,os,types
 
-from pytools import fileutil, readgeis
+from stsci.tools import fileutil, readgeis
 
 import pyfits
 import numpy as np
