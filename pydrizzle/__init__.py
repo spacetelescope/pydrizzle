@@ -7,14 +7,7 @@ no = False  # 0
 from .drutil import DEFAULT_IDCDIR
 from math import *
 
-try:
-    from .version import (__version__, __svn_revision__,
-                          __svn_full_info__, __setup_datetime__)
-except ImportError:
-    __version__ = ''
-    __svn_revision__ = ''
-    __svn_full_info__ = ''
-    __setup_datetime__ = None
+from .version import *
 
 def PyDrizzle(input, output=None, field=None, units=None, section=None,
         kernel=None,pixfrac=None,bits_final=0,bits_single=0,
