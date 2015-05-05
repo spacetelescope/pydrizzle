@@ -1,7 +1,7 @@
 from __future__ import division # confidence medium
-from pattern import *
+from .pattern import *
 from stsci.tools import fileutil
-from distortion import mutil
+from .distortion import mutil
 import numpy as np
 
 class ACSObservation(Pattern):
@@ -391,7 +391,7 @@ class WFPCObservation(Pattern):
         # Build rootname here for each SCI extension...
         if self.pars['section'] == None:
             self.pars['section'] = [None] * self.nmembers
-            group_indx = range(1,self.nmembers+1)
+            group_indx = list(range(1,self.nmembers+1))
         else:
             group_indx = self.pars['section']
 

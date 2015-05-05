@@ -16,11 +16,11 @@
 #           0.1.4 -- Implemented support for providing subarray sections
 #                   of DGEOFILEs for subarray exposures.
 #
-from __future__ import division # confidence medium
+from __future__ import division, print_function # confidence medium
 
 import os
 import buildmask, drutil, arrdriz
-from obsgeometry import ObsGeometry
+from .obsgeometry import ObsGeometry
 from stsci.tools import fileutil, wcsutil
 from math import ceil,floor
 
@@ -84,7 +84,7 @@ class Exposure:
                     _extn = 1
                     expname += '[1]'
                 else:
-                    raise IOError, "No valid image data in %s.\n"%expname
+                    raise IOError("No valid image data in %s.\n"%expname)
             else:
                 _extn = 0
 
@@ -512,7 +512,7 @@ class Exposure:
     def getWCS(self):
         return self.geometry.wcs
     def showWCS(self):
-        print self.geometry.wcs
+        print(self.geometry.wcs)
 
     def runDriz(self,pixfrac=1.0,kernel='turbo',fillval='INDEF'):
         """ Runs the 'drizzle' algorithm on this specific chip to create
@@ -611,9 +611,9 @@ class Exposure:
         #
 
         if nmiss > 0:
-            print '! Warning, ',nmiss,' points were outside the output image.'
+            print('! Warning, ',nmiss,' points were outside the output image.')
         if nskip > 0:
-            print '! Note, ',nskip,' input lines were skipped completely.'
+            print('! Note, ',nskip,' input lines were skipped completely.')
 
         # Close image handle
         _handle.close()

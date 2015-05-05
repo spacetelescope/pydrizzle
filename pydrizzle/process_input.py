@@ -1,9 +1,9 @@
-from __future__ import division # confidence high
+from __future__ import division, print_function # confidence high
 from stsci.tools import parseinput, fileutil, readgeis, asnutil, irafglob
 import pyfits
 import os
 
-import makewcs
+from . import makewcs
 
 """
 Process input to pydrizzle.
@@ -114,7 +114,7 @@ def process_input(input, output=None, ivmlist=None, updatewcs=True, prodonly=Fal
         elif drz_extn[:4] not in output.lower():
             output = fileutil.buildNewRootname(output, extn=drz_extn)
 
-    print 'Setting up output name: ',output
+    print('Setting up output name: ',output)
 
     return asndict, ivmlist, output
 
@@ -145,8 +145,8 @@ def checkFiles(filelist, ivmlist = None):
         try:
             imgfits,imgtype = fileutil.isFits(file[0])
         except IOError:
-            print "Warning:  File %s could not be found\n" %file[0]
-            print "Removing file %s from input list" %file[0]
+            print("Warning:  File %s could not be found\n" %file[0])
+            print("Removing file %s from input list" %file[0])
             removed_files.append(file)
             continue
         if file[1] != None:
@@ -155,15 +155,15 @@ def checkFiles(filelist, ivmlist = None):
             try:
                 ivmfits,ivmtype = fileutil.isFits(file[1])
             except IOError:
-                print "Warning:  File %s could not be found\n" %file[1]
-                print "Removing file %s from input list" %file[0]
+                print("Warning:  File %s could not be found\n" %file[1])
+                print("Removing file %s from input list" %file[0])
                 removed_files.append(file)
         # Check for existence of waiver FITS input, and quit if found.
         # Or should we print a warning and continue but not use that file
         if imgfits and imgtype == 'waiver':
             newfilename = waiver2mef(file[0], convert_dq=True)
             if newfilename == None:
-                print "Removing file %s from input list - could not convert waiver to mef" %file[0]
+                print("Removing file %s from input list - could not convert waiver to mef" %file[0])
                 removed_files.append(file[0])
             else:
                 translated_names.append(newfilename)
@@ -174,22 +174,22 @@ def checkFiles(filelist, ivmlist = None):
         if not imgfits:
             newfilename = geis2mef(file[0], convert_dq=True)
             if newfilename == None:
-                print "Removing file %s from input list - could not convert geis to mef" %file[0]
+                print("Removing file %s from input list - could not convert geis to mef" %file[0])
                 removed_files.append(file[0])
             else:
                 translated_names.append(newfilename)
         if file[1] != None:
             if ivmfits and ivmtype == 'waiver':
-                print "Warning: PyDrizzle does not support waiver fits format.\n"
-                print "Convert the input files to GEIS or multiextension FITS.\n"
-                print "File %s appears to be in waiver fits format \n" %file[1]
-                print "Removing file %s from input list" %file[0]
+                print("Warning: PyDrizzle does not support waiver fits format.\n")
+                print("Convert the input files to GEIS or multiextension FITS.\n")
+                print("File %s appears to be in waiver fits format \n" %file[1])
+                print("Removing file %s from input list" %file[0])
                 removed_files.append(file[0])
 
             if not ivmfits:
                 newfilename = geis2mef(file[1], convert_dq=False)
                 if newfilename == None:
-                    print "Removing file %s from input list" %file[0]
+                    print("Removing file %s from input list" %file[0])
                     removed_files.append(file[0])
                 else:
                     newivmlist.append(newfilename)
@@ -230,7 +230,7 @@ def checkFiles(filelist, ivmlist = None):
             errorstr += "         "+ str(name) + "\n"
         errorstr += "#                                           #\n"
         errorstr += "#############################################\n\n"
-        print errorstr
+        print(errorstr)
 
     removed_ngood_files = checkNGOODPIX(newfilelist)
     newfilelist, ivmlist = update_input(newfilelist, ivmlist, removed_ngood_files)
@@ -251,7 +251,7 @@ def checkFiles(filelist, ivmlist = None):
         msgstr += "#  to accept flagged pixels.       #\n"
         msgstr += "#                                  #\n"
         msgstr += "####################################\n"
-        print msgstr
+        print(msgstr)
 
     return newfilelist, ivmlist
 
@@ -271,7 +271,7 @@ def waiver2mef(sciname, newname=None, convert_dq=True):
             del newimage
             return newfilename
         except IOError:
-            print 'Warning: File %s could not be found' % file
+            print('Warning: File %s could not be found' % file)
             return None
 
     newsciname = convert(sciname)
@@ -298,7 +298,7 @@ def geis2mef(sciname, convert_dq=True):
             del newimage
             return newfilename
         except IOError:
-            print 'Warning: File %s could not be found' % file
+            print('Warning: File %s could not be found' % file)
             return None
 
     newsciname = convert(sciname)
@@ -315,7 +315,7 @@ def checkStisFiles(filelist, ivmlist=None):
     if len(filelist) != len(ivmlist):
         errormsg = "Input file list and ivm list have different lenghts\n"
         errormsg += "Quitting ...\n"
-        raise ValueError, errormsg
+        raise ValueError(errormsg)
 
     for t in zip(filelist, ivmlist):
         sci_count = stisObsCount(t[0])
@@ -332,7 +332,7 @@ def checkStisFiles(filelist, ivmlist=None):
             newilist.append(t[1])
         else:
             errormsg = "No valid 'SCI extension in STIS file\n"
-            raise ValueError, errormsg
+            raise ValueError(errormsg)
 
     return newflist, newilist
 
@@ -393,7 +393,7 @@ def update_input(filelist, ivmlist=None, removed_files=None):
     if removed_files == []:
         return filelist, ivmlist
     else:
-        sci_ivm = zip(filelist, ivmlist)
+        sci_ivm = list(zip(filelist, ivmlist))
         for f in removed_files:
             result=[sci_ivm.remove(t) for t in sci_ivm if t[0] == f ]
         ivmlist = [el[1] for el in sci_ivm]
@@ -465,7 +465,7 @@ def splitStis(stisfile, sci_count):
             errorstr += "#  dq, and err arrays.        #\n"
             errorstr += "#                             #\n"
             errorstr += "###############################\n"
-            raise ValueError, errorstr
+            raise ValueError(errorstr)
 
 
         # Update the 'EXTNER' keyword to indicate the new extnesion number
@@ -478,7 +478,7 @@ def splitStis(stisfile, sci_count):
         # If the file does exist, replace it.
         if (os.path.exists(newfilename)):
             os.remove(newfilename)
-            print "       Replacing "+newfilename+"..."
+            print("       Replacing "+newfilename+"...")
 
             # Write out the new file
         fitsobj.writeto(newfilename)
@@ -489,7 +489,7 @@ def splitStis(stisfile, sci_count):
     try:
         sptfile = pyfits.open(sptfilename)
     except IOError:
-        print 'SPT file not found %s \n' % sptfilename
+        print('SPT file not found %s \n' % sptfilename)
         sptfile=None
 
     if sptfile:
@@ -505,12 +505,12 @@ def splitStis(stisfile, sci_count):
                 fitsobj[1].header['EXTVER'] = 1
                 if (os.path.exists(newfilename)):
                     os.remove(newfilename)
-                    print "       Replacing "+newfilename+"..."
+                    print("       Replacing "+newfilename+"...")
 
                 # Write out the new file
                 fitsobj.writeto(newfilename)
         except:
-            print "Warning: Unable to split spt file %s " % sptfilename
+            print("Warning: Unable to split spt file %s " % sptfilename)
         sptfile.close()
 
     return newfiles
@@ -526,17 +526,21 @@ def update_member_names(oldasndict, pydr_input):
     be replaced by 'u9600201m_c0h' making sure that a MEf file is passed
     as an input and not the corresponding GEIS file.
     """
+    import sys
     omembers = oldasndict['members'].copy()
     nmembers = {}
     translated_names = [f.split('.fits')[0] for f in pydr_input]
 
     newkeys = [fileutil.buildNewRootname(file) for file in pydr_input]
-    keys_map = zip(newkeys, pydr_input)
 
-    iter = omembers.iteritems()
+    if sys.version_info[0] < 3:
+        iterator = iter(omembers.items())
+    else:
+        iterator = omembers.items()
+
     while True:
         try:
-            okey,oval = iter.next()
+            okey,oval = next(iterator)
             if okey in newkeys:
                 nkey = pydr_input[newkeys.index(okey)]
                 nmembers[nkey.split('.fits')[0]] = oval
@@ -576,7 +580,7 @@ def buildEmptyDRZ(input, output):
         if 'drz' not in output:
             output = fileutil.buildNewRootname(output,extn='_drz.fits')
 
-    print 'Setting up output name: ',output
+    print('Setting up output name: ',output)
 
     # Open the first image of the excludedFileList to use as a template to build
     # the DRZ file.
@@ -584,7 +588,7 @@ def buildEmptyDRZ(input, output):
     try :
         img = pyfits.open(inputfile[0])
     except:
-        raise IOError, 'Unable to open file %s \n' %inputfile
+        raise IOError('Unable to open file %s \n' %inputfile)
 
     # Create the fitsobject
     fitsobj = pyfits.HDUList()
@@ -628,7 +632,7 @@ def buildEmptyDRZ(input, output):
     if 'drc' in output:
         _drzsuffix = 'drc'
     fitsobj[0].header['ROOTNAME'] = str(output.split('_%s.fits'%_drzsuffix)[0])
-    print 'self.output', output
+    print('self.output', output)
     # Modify the ASN_MTYP keyword to contain "PROD-DTH" so it can be properly
     # ingested into the archive catalog.
     fitsobj[0].header['ASN_MTYP'] = 'PROD-DTH'
@@ -644,14 +648,14 @@ def buildEmptyDRZ(input, output):
     errstr += "#  EXPTIME values in the header non-zero.   #\n"
     errstr += "#                                           #\n"
     errstr += "#############################################\n\n"
-    print errstr
+    print(errstr)
 
     # If the file is already on disk delete it and replace it with the
     # new file
     dirfiles = os.listdir(os.curdir)
     if (dirfiles.count(output) > 0):
         os.remove(output)
-        print "       Replacing "+output+"..."
+        print("       Replacing "+output+"...")
 
     # Write out the empty DRZ file
     fitsobj.writeto(output)

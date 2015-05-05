@@ -14,7 +14,7 @@ tasks.
 #                   fileutil.getKeyword() to remove dependencies on IRAF.
 #                   Also, replaced 'yes' and 'no' with Python Bool vars.
 #
-from __future__ import division # confidence medium
+from __future__ import division, print_function # confidence medium
 
 import os
 from math import ceil,floor
@@ -76,7 +76,7 @@ def findNumExt(filename):
     # This may need to be changed to support simple image without
     # extensions (such as simple FITS images).
     if _s == '':
-        raise ValueError,"There are NO extensions to be read in this image!"
+        raise ValueError("There are NO extensions to be read in this image!")
 
     return _s
 
@@ -133,7 +133,7 @@ def getIDCFile(image,keyword="",directory=None):
     #
 
 
-    if isinstance(image, basestring):
+    if type(image) == type(''):
         # We were provided an image name, so read in the header...
         header = fileutil.getHeader(image)
     else:
@@ -167,8 +167,8 @@ def getIDCFile(image,keyword="",directory=None):
 
 
     if idcfile == None:
-        print 'WARNING: No valid distortion coefficients available!'
-        print 'Using default unshifted, unscaled, unrotated model.'
+        print('WARNING: No valid distortion coefficients available!')
+        print('Using default unshifted, unscaled, unrotated model.')
 
     return idcfile,idctype
 
@@ -221,7 +221,7 @@ def __getIDCTAB(header):
     try:
         idcfile = header['idctab']
     except:
-        print 'Warning: No IDCTAB specified in header!'
+        print('Warning: No IDCTAB specified in header!')
         idcfile = None
 
     return idcfile,'idctab'
@@ -470,11 +470,11 @@ def getRange(members,ref_wcs,verbose=None):
     meta_range['ysize'] = ysize
 
     if verbose:
-        print 'Meta_WCS:'
-        print '    NREF         :',nref
-        print '    X range      :',xmin,xmax
-        print '    Y range      :',ymin,ymax
-        print '    Computed Size: ',xsize,ysize
+        print('Meta_WCS:')
+        print('    NREF         :',nref)
+        print('    X range      :',xmin,xmax)
+        print('    Y range      :',ymin,ymax)
+        print('    Computed Size: ',xsize,ysize)
 
     return meta_range
 
@@ -540,7 +540,7 @@ def wcsfit(img_geom, ref):
                        (_cpix[0]+1.,_cpix[1]+1.),(_cpix[0]+1.,_cpix[1])], dtype=np.float64)
     # Convert these positions to RA/Dec
     _cpix_rd = img_wcs.xy2rd(_cpix_arr)
-    for pix in xrange(len(_cpix_rd[0])):
+    for pix in range(len(_cpix_rd[0])):
         _cpix_xyref[pix,0],_cpix_xyref[pix,1] = ref_wcs.rd2xy((_cpix_rd[0][pix],_cpix_rd[1][pix]))
 
 
@@ -591,7 +591,7 @@ def fitlin(imgarr,refarr):
 
     _npos = len(imgarr)
     # Populate matrices
-    for i in xrange(_npos):
+    for i in range(_npos):
         _mat[0][0] += np.power((imgarr[i][0] - _xorg),2)
         _mat[0][1] += (imgarr[i][0] - _xorg) * (imgarr[i][1] - _yorg)
         _mat[0][2] += (imgarr[i][0] - _xorg)

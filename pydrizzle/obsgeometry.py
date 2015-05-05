@@ -1,13 +1,14 @@
-from __future__ import division # confidence medium
+from __future__ import absolute_import, print_function
+ # confidence medium
 import types,string,os,copy
 from math import ceil,floor
 
 # Import PyDrizzle utility modules
 from stsci.tools import fileutil, wcsutil
-from distortion import models,mutil
+from .distortion import models,mutil
 
 import numpy as np
-import drutil
+from . import drutil
 
 
 yes = True
@@ -59,7 +60,7 @@ class ObsGeometry:
                     _offtab = self.header['offtab']
 
             except:
-                print '! Warning: Using default filter settings of CLEAR.'
+                print('! Warning: Using default filter settings of CLEAR.')
 
         if _filt1 == None:
             _filt1 = 'CLEAR1'
@@ -150,8 +151,8 @@ class ObsGeometry:
                 if 'IDCSCALE' in self.header:
                     self.model = models.WCSModel(self.header, rootname)
                 else:
-                    print 'WARNING: Not all SIP-related keywords found!'
-                    print '         Reverting to use of IDCTAB for distortion.'
+                    print('WARNING: Not all SIP-related keywords found!')
+                    print('         Reverting to use of IDCTAB for distortion.')
 
                     self.model =  models.IDCModel(self.idcfile,
                         chip=chip, direction=self.direction, date=self.date,
@@ -159,7 +160,7 @@ class ObsGeometry:
                         tddcorr=self.tddcorr)
 
             else:
-                raise ValueError, "Unknown type of coefficients table %s"%idcfile
+                raise ValueError("Unknown type of coefficients table %s"%idcfile)
 
             if self.idcfile == None and ikey != 'wcs':
                 #Update default model with WCS plate scale
@@ -349,17 +350,17 @@ class ObsGeometry:
         _naxis = (wcs.naxis1,wcs.naxis2)
         _rot_mat = fileutil.buildRotMatrix(_orient)
 
-        if isinstance(pixpos, types.TupleType):
+        if isinstance(pixpos, tuple):
             pixpos = [pixpos]
 
         _delta_x,_delta_y = self.apply(pixpos)
         if verbose:
-            print 'Raw corrected position: ',_delta_x,_delta_y
+            print('Raw corrected position: ',_delta_x,_delta_y)
 
         _delta_x += self.model.refpix['XDELTA']
         _delta_y += self.model.refpix['YDELTA']
         if verbose:
-            print 'Fully corrected position: ',_delta_x,_delta_y
+            print('Fully corrected position: ',_delta_x,_delta_y)
 
         _delta = np.zeros((len(pixpos),2),dtype=np.float32)
         _delta[:,0] = _delta_x
@@ -375,10 +376,10 @@ class ObsGeometry:
         _yt = _yoff + _yp
 
         if verbose:
-            print 'XSH,YSH: ',_xoff,_yoff
-            print 'XDELTA,YDELTA: ',self.model.refpix['XDELTA'],self.model.refpix['YDELTA']
-            print 'XREF,YREF: ',self.model.refpix['XREF'],self.model.refpix['YREF']
-            print 'xt,yt: ',_xt,_yt,' based on xp,yp: ',_xp,_yp
+            print('XSH,YSH: ',_xoff,_yoff)
+            print('XDELTA,YDELTA: ',self.model.refpix['XDELTA'],self.model.refpix['YDELTA'])
+            print('XREF,YREF: ',self.model.refpix['XREF'],self.model.refpix['YREF'])
+            print('xt,yt: ',_xt,_yt,' based on xp,yp: ',_xp,_yp)
 
         _xy_corr = np.dot(_delta,_rot_mat) / _scale
         _delta[:,0] = _xy_corr[:,0] + _xt
@@ -504,7 +505,7 @@ class ObsGeometry:
         # Check the determinant for singularity
         _det = (_am * _dm) - (_bm * _cm)
         if ( _det == 0.0):
-            print 'Matrix is singular! Can NOT update WCS.'
+            print('Matrix is singular! Can NOT update WCS.')
             return
 
         _cd_inv = np.linalg.inv(_cd_mat)
@@ -570,13 +571,13 @@ class ObsGeometry:
                 xsky,ysky = self.wcs.xy2rd(pos)
 
         else:
-            print 'RA/Dec positions without using distortion coefficients:'
+            print('RA/Dec positions without using distortion coefficients:')
             xsky,ysky = self.wcs.xy2rd(pos)
 
         # Format the results for easy understanding, if desired...
         if verbose:
             rastr,decstr = wcsutil.ddtohms(xsky,ysky,verbose=verbose)
-            print 'RA: ',rastr,'  Dec: ',decstr
+            print('RA: ',rastr,'  Dec: ',decstr)
 
         # Return the skypos as a tuple (x,y)
         return xsky,ysky
@@ -593,7 +594,7 @@ class ObsGeometry:
         x,y = self.wcs.rd2xy(skypos,hour=hour)
 
         if verbose:
-            print 'X = ',x,' Y = ',y
+            print('X = ',x,' Y = ',y)
 
         # Return the pixel position as a tuple (x,y)
         # return pos

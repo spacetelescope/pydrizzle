@@ -8,7 +8,7 @@ Functions to build mask files for PyDrizzle.
         This function builds a weighting image for use with drizzle from
         the WFPC2 shadow mask functions derived from 'wmosaic'.
 """
-from __future__ import division # confidence high
+from __future__ import division, print_function # confidence high
 
 #
 # Revision History:
@@ -117,7 +117,7 @@ def buildMaskImage(rootname,bitvalue,output,extname='DQ',extver=1):
             os.remove(maskname)
         _errstr = "\nWarning: Problem creating MASK file for "+rootname+".\n"
         #raise IOError, _errstr
-        print _errstr
+        print(_errstr)
         return None
 
     # Return the name of the mask image written out
@@ -160,7 +160,7 @@ def buildShadowMaskImage(rootname,detnum,extnum,maskname,replace=yes,bitvalue=No
       detnum - string value for 'DETECTOR' detector
     """
     # insure detnum is a string
-    if not isinstance(detnum,types.StringType):
+    if  type(detnum) != type(''):
         detnum = repr(detnum)
 
     _funcroot = '_func_Shadow_WF'
@@ -203,7 +203,7 @@ def buildShadowMaskImage(rootname,detnum,extnum,maskname,replace=yes,bitvalue=No
             maskarr = _xarr * _yarr
 
             if binned !=1:
-                print 'in buildmask', binned
+                print('in buildmask', binned)
                 bmaskarr = maskarr[::2,::2]
                 bmaskarr *= maskarr[1::2,::2]
                 bmaskarr *= maskarr[::2,1::2]
@@ -225,8 +225,8 @@ def buildShadowMaskImage(rootname,detnum,extnum,maskname,replace=yes,bitvalue=No
 
     # Check for existance of input .c1h file for use in making inmask file
     if fileutil.findFile(_dqname) != yes:
-        print 'DQ file ',_dqname,' NOT found...'
-        print 'Copying ',_mask,'to ',maskname,' as input mask file.'
+        print('DQ file ',_dqname,' NOT found...')
+        print('Copying ',_mask,'to ',maskname,' as input mask file.')
         # Now, copy template mask file to output file, if necessary
         fileutil.copyFile(_mask,maskname,replace=yes)
     elif bitvalue == None:
@@ -265,7 +265,7 @@ def buildShadowMaskImage(rootname,detnum,extnum,maskname,replace=yes,bitvalue=No
                 os.remove(maskname)
             _errstr = "\nWarning: Problem creating DQMASK file for "+rootname+".\n"
             #raise IOError, _errstr
-            print _errstr
+            print(_errstr)
             return None
 
 

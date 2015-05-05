@@ -51,7 +51,7 @@ MAKEWCS V0.0 (RNH) - Created new version to implement more complete
                         the use of the numerix interface layer.
 
 """
-from __future__ import division # confidence high
+from __future__ import division, print_function # confidence high
 
 from stsci.tools import numerixenv
 numerixenv.check()
@@ -61,8 +61,8 @@ from math import *
 import os.path
 import pyfits
 
-import drutil
-from distortion import models, mutil
+from . import drutil
+from .distortion import models, mutil
 from stsci.tools import fileutil, wcsutil, parseinput
 import numpy as N
 
@@ -83,14 +83,14 @@ NUM_PER_EXTN = {'ACS':3,'WFPC2':1,'STIS':3,'NICMOS':5, 'WFC3':3}
 __version__ = '1.1.7 (6 Jul 2010)'
 def run(input,quiet=yes,restore=no,prepend='O', tddcorr=True):
 
-    print "+ MAKEWCS Version %s" % __version__
+    print("+ MAKEWCS Version %s" % __version__)
 
     _prepend = prepend
 
     files = parseinput.parseinput(input)[0]
     newfiles = []
     if files == []:
-        print "No valid input files found.\n"
+        print("No valid input files found.\n")
         raise IOError
 
     for image in files:
@@ -124,19 +124,19 @@ def run(input,quiet=yes,restore=no,prepend='O', tddcorr=True):
             newfiles.append(image)
 
         if not quiet:
-            print "Input files: ",files
+            print("Input files: ",files)
 
         # First get the name of the IDC table
         #idctab = drutil.getIDCFile(_files[0][0],keyword='idctab')[0]
         idctab = drutil.getIDCFile(image,keyword='idctab')[0]
         _found = fileutil.findFile(idctab)
         if idctab == None or idctab == '':
-            print '#\n No IDCTAB specified.  No correction can be done for file %s.Quitting makewcs\n' %image
+            print('#\n No IDCTAB specified.  No correction can be done for file %s.Quitting makewcs\n' %image)
             #raise ValueError
             continue
         elif not _found:
-            print '#\n IDCTAB: ',idctab,' could not be found. \n'
-            print 'WCS keywords for file %s will not be updated.\n' %image
+            print('#\n IDCTAB: ',idctab,' could not be found. \n')
+            print('WCS keywords for file %s will not be updated.\n' %image)
             #raise IOError
             continue
 
@@ -155,14 +155,14 @@ def run(input,quiet=yes,restore=no,prepend='O', tddcorr=True):
         _detector = fileutil.getKeyword(_phdu, keyword='DETECTOR')
         _nimsets = get_numsci(image)
 
-        for i in xrange(_nimsets):
+        for i in range(_nimsets):
             if image.find('.fits') > 0:
                 _img = image+'[sci,'+repr(i+1)+']'
             else:
                 _img = image+'['+repr(i+1)+']'
             if not restore:
                 if not quiet:
-                    print 'Updating image: ', _img
+                    print('Updating image: ', _img)
 
                 _update(_img,idctab, _nimsets, apply_tdd=False,
                         quiet=quiet,instrument=_instrument,prepend=_prepend,
@@ -177,12 +177,12 @@ def run(input,quiet=yes,restore=no,prepend='O', tddcorr=True):
                     # values of alpha and beta as computed here to apply the
                     # correction to the coefficients.
                     if (tddcorr and tddswitch != 'OMIT'):
-                        print 'Applying time-dependent distortion corrections...'
+                        print('Applying time-dependent distortion corrections...')
                         _update(_img,idctab, _nimsets, apply_tdd=True, \
                                 quiet=quiet,instrument=_instrument,prepend=_prepend, nrchip=Nrefchip, nrext = Nrefext)
             else:
                 if not quiet:
-                    print 'Restoring original WCS values for',_img
+                    print('Restoring original WCS values for',_img)
                 restoreCD(_img,_prepend)
 
         #fimg = fileutil.openImage(image,mode='update')
@@ -203,7 +203,7 @@ def restoreCD(image,prepend):
         _wcs.restoreWCS(prepend=_prepend)
         del _wcs
     except:
-        print 'ERROR: Could not restore WCS keywords for %s.'%image
+        print('ERROR: Could not restore WCS keywords for %s.'%image)
 
 def _update(image,idctab,nimsets,apply_tdd=False,
             quiet=None,instrument=None,prepend=None,nrchip=None, nrext=None):
@@ -224,12 +224,12 @@ def _update(image,idctab,nimsets,apply_tdd=False,
     offtab = readKeyword(hdr,'OFFTAB')
     dateobs = readKeyword(hdr,'DATE-OBS')
     if not quiet:
-        print "OFFTAB, DATE-OBS: ",offtab,dateobs
+        print("OFFTAB, DATE-OBS: ",offtab,dateobs)
 
-    print "-Updating image ",image
+    print("-Updating image ",image)
 
     if not quiet:
-        print "-Reading IDCTAB file ",idctab
+        print("-Reading IDCTAB file ",idctab)
 
     # Get telescope orientation from image header
     # If PA_V# is not present of header, try to get it from the spt file
@@ -242,7 +242,7 @@ def _update(image,idctab,nimsets,apply_tdd=False,
     if pvt != None:
         pvt = float(pvt)
     else:
-        print 'PA_V3 keyword not found, WCS cannot be updated. Quitting ...'
+        print('PA_V3 keyword not found, WCS cannot be updated. Quitting ...')
         raise ValueError
 
     # Find out about instrument, detector & filters
@@ -299,7 +299,7 @@ def _update(image,idctab,nimsets,apply_tdd=False,
         VA_fac=1.0
 
     if not quiet:
-        print 'VA factor: ',VA_fac
+        print('VA factor: ',VA_fac)
 
     #ra_targ = float(readKeyword(hdr,'RA_TARG'))
     #dec_targ = float(readKeyword(hdr,'DEC_TARG'))
@@ -336,7 +336,7 @@ def _update(image,idctab,nimsets,apply_tdd=False,
             nr = Nrefchip
 
     if not quiet:
-        print "-PA_V3 : ",pvt," CHIP #",chip
+        print("-PA_V3 : ",pvt," CHIP #",chip)
 
 
     # Extract the appropriate information from the IDCTAB
@@ -415,7 +415,7 @@ def _update(image,idctab,nimsets,apply_tdd=False,
     # Create the reference image name
     rimage = image.split('[')[0]+"[sci,%d]" % nr
     if not quiet:
-        print "Reference image: ",rimage
+        print("Reference image: ",rimage)
 
     # Create the tangent plane WCS on which the images are defined
     # This is close to that of the reference chip
@@ -479,7 +479,7 @@ def _update(image,idctab,nimsets,apply_tdd=False,
     R_cdmat = N.array([[R.cd11,R.cd12],[R.cd21,R.cd22]])
 
     if not quiet:
-        print "  Reference Chip Scale (arcsec/pix): ",rrefpix['PSCALE']
+        print("  Reference Chip Scale (arcsec/pix): ",rrefpix['PSCALE'])
 
     # Offset and angle in V2/V3 from reference chip to
     # new chip(s) - converted to reference image pixels
@@ -691,7 +691,7 @@ def readKeyword(hdr,keyword):
     # So, the following piece of code CHECKS for this and FIXES the string,
     # very simply by removing the last character if it is a "/".
     # This fix courtesy of Anton Koekemoer, 2002.
-    if isinstance(value, basestring):
+    if type(value) == type(''):
         if value[-1:] == '/':
             value = value[:-1]
 
@@ -727,14 +727,14 @@ def shift_coeffs(cx,cy,xs,ys,norder):
     _k = norder + 1
 
     # loop over each input coefficient
-    for m in xrange(_k):
-        for n in xrange(_k):
+    for m in range(_k):
+        for n in range(_k):
             if m >= n:
                 # For this coefficient, shift by xs/ys.
-                _ilist = N.array(range(_k - m)) + m
+                _ilist = N.array(list(range(_k - m))) + m
                 # sum from m to k
                 for i in _ilist:
-                    _jlist = N.array(range( i - (m-n) - n + 1)) + n
+                    _jlist = N.array(list(range( i - (m-n) - n + 1))) + n
                     # sum from n to i-(m-n)
                     for j in _jlist:
                         _cxs[m,n] = _cxs[m,n] + cx[i,j]*pydrizzle._combin(j,n)*pydrizzle._combin((i-j),(m-n))*pow(xs,(j-n))*pow(ys,((i-j)-(m-n)))
@@ -816,6 +816,6 @@ An example of how this can be used is given as::
 """
 
 def help():
-    print _help_str
+    print(_help_str)
 
 run.__doc__ = _help_str

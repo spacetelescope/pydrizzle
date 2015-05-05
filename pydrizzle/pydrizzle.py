@@ -1,16 +1,16 @@
-from __future__ import division # confidence medium
+from __future__ import absolute_import, division, print_function # confidence medium
 from drutil import DEFAULT_IDCDIR
 from stsci.tools import fileutil, wcsutil, asnutil
 
 import string, os, types, sys
 import shutil
 import arrdriz
-import outputimage
-from pattern import *
-from observations import *
+from . import outputimage
+from .pattern import *
+from .observations import *
 
 # Hackish, but not invalid
-from __init__ import __version__
+from .__init__ import __version__
 #import buildasn
 #import p_m_input
 
@@ -102,7 +102,7 @@ More help on SkyField objects and their parameters can be obtained using:
         if idcdir == None: idcdir = DEFAULT_IDCDIR
 
 
-        print 'Starting PyDrizzle Version ',__version__,' at ', _ptime()
+        print('Starting PyDrizzle Version ',__version__,' at ', _ptime())
 
 
         self.input = input
@@ -151,7 +151,7 @@ More help on SkyField objects and their parameters can be obtained using:
             pardict = asndict['members'][inroot]
             infile = fileutil.buildRootname(inroot)
             if infile == None:
-                raise IOError,'No product found for association table.'
+                raise IOError('No product found for association table.')
             # Append user specified parameters to shifts dictionary
             pardict.update(self.pars)
             #self.observation = selectInstrument(infile,output,pars=pardict)
@@ -179,8 +179,8 @@ More help on SkyField objects and their parameters can be obtained using:
         self.observation.closeHandle()
 
         # Let the user know parameters have been successfully calculated
-        print 'Drizzle parameters have been calculated. Ready to .run()...'
-        print 'Finished calculating parameters at ',_ptime()
+        print('Drizzle parameters have been calculated. Ready to .run()...')
+        print('Finished calculating parameters at ',_ptime())
 
     def translateShifts(self, asndict):
         """
@@ -264,12 +264,12 @@ More help on SkyField objects and their parameters can be obtained using:
         self.build = build
         self.debug = debug
 
-        print 'PyDrizzle: drizzle task started at ',_ptime()
+        print('PyDrizzle: drizzle task started at ',_ptime())
         _memmap = self.pars['memmap']
 
         # Check for existance of output file.
         if single == no and build == yes and fileutil.findFile(self.output):
-            print 'Removing previous output product...'
+            print('Removing previous output product...')
             os.remove(self.output)
         #
         # Setup the versions info dictionary for output to PRIMARY header
@@ -484,23 +484,23 @@ More help on SkyField objects and their parameters can be obtained using:
                     _mask = plist['driz_mask']
 
                 # Check to see whether there is a mask_array at all to use...
-                if isinstance(_mask,types.StringType):
+                if type(_mask,types) == type('') :
                     if _mask != None and _mask != '':
                         _wht_handle = fileutil.openImage(_mask,mode='readonly',memmap=0)
                         _inwht = _wht_handle[0].data.astype(np.float32)
                         _wht_handle.close()
                         del _wht_handle
                     else:
-                        print 'No weight or mask file specified!  Assuming all pixels are good.'
+                        print('No weight or mask file specified!  Assuming all pixels are good.')
                         _inwht = np.ones((plist['blotny'],plist['blotnx']),dtype=np.float32)
                 elif _mask != None:
                     _inwht = _mask.astype(np.float32)
                 else:
-                    print 'No weight or mask file specified!  Assuming all pixels are good.'
+                    print('No weight or mask file specified!  Assuming all pixels are good.')
                     _inwht = np.ones((plist['blotny'],plist['blotnx']),dtype=np.float32)
 
                 if plist['wt_scl'] != None:
-                    if isinstance(plist['wt_scl'],types.StringType):
+                    if type(plist['wt_scl']) == type(''):
                         if  plist['wt_scl'].isdigit() == False :
                             # String passed in as value, check for 'exptime' or 'expsq'
                             _wtscl_float = None
@@ -606,9 +606,9 @@ More help on SkyField objects and their parameters can be obtained using:
                 plist['driz_version'] = _vers
 
                 if nmiss > 0:
-                    print '! Warning, ',nmiss,' points were outside the output image.'
+                    print('! Warning, ',nmiss,' points were outside the output image.')
                 if nskip > 0:
-                    print '! Note, ',nskip,' input lines were skipped completely.'
+                    print('! Note, ',nskip,' input lines were skipped completely.')
                 # Close image handle
                 _handle.close()
                 del _handle,_fname,_extn,_sciext
@@ -690,7 +690,7 @@ More help on SkyField objects and their parameters can be obtained using:
                 if img['single_driz_mask'] != None:
                     fileutil.removeFile(img['single_driz_mask'])
 
-        print 'PyDrizzle drizzling completed at ',_ptime()
+        print('PyDrizzle drizzling completed at ',_ptime())
 
 
     def resetPars(self,field=None,pixfrac=None,kernel=None,units=None):
@@ -702,7 +702,7 @@ More help on SkyField objects and their parameters can be obtained using:
             if isinstance(field, wcsutil.WCSObject):
                 _ref = SkyField(wcs=field)
             else:
-                raise TypeError, 'No valid WCSObject or SkyField object entered...'
+                raise TypeError('No valid WCSObject or SkyField object entered...')
         else:
             _ref = field
         # Create new version of the parlist with the new values of the
@@ -713,7 +713,7 @@ More help on SkyField objects and their parameters can be obtained using:
         # Copy the parameters from the new parlist into the existing
         # parlist (self.parlist) to preserve any changes/updates made
         # to the parlist externally to PyDrizzle.
-        for i in xrange(len(self.parlist)):
+        for i in range(len(self.parlist)):
             for key in new_parlist[i]:
                 self.parlist[i][key] = new_parlist[i][key]
         del new_parlist
@@ -729,8 +729,8 @@ More help on SkyField objects and their parameters can be obtained using:
                     if units == 'counts' or units == 'cps':
                         p['units'] = units
                     else:
-                        print 'Units ',units,' not valid! Parameter not reset.'
-                        print 'Please use either "cps" or "counts".'
+                        print('Units ',units,' not valid! Parameter not reset.')
+                        print('Please use either "cps" or "counts".')
 
     def help(self):
         """
@@ -742,13 +742,13 @@ More help on SkyField objects and their parameters can be obtained using:
         """ Prints common parameters for review. """
         if format:
             _title = pars.replace(',','    ')
-            print _title
-            print '-'*72
+            print(_title)
+            print('-'*72)
 
         _pars = pars.split(',')
         for pl in self.parlist:
-            for _p in _pars: print pl[_p],
-            print ''
+            for _p in _pars: print(pl[_p], end=' ')
+            print('')
 
     def getMember(self,memname):
         """ Returns the class instance for the specified member name."""
@@ -976,7 +976,7 @@ class SkyField:
     def help(self):
         """ Creates and prints usage information for this class.
         """
-        print self.__doc__
+        print(self.__doc__)
 
 class DitherProduct(Pattern):
     """
@@ -1007,7 +1007,7 @@ class DitherProduct(Pattern):
         self.addMembers(prodlist,pars,output)
 
         if len(self.members) == 0:
-            print 'No suitable inputs from ASN table. Quitting PyDrizzle...'
+            print('No suitable inputs from ASN table. Quitting PyDrizzle...')
             raise Exception
 
         self.exptime = self.getExptime()
@@ -1137,7 +1137,7 @@ class DitherProduct(Pattern):
             if filename:
                 self.members.append(selectInstrument(filename,output,pars=pardict))
             else:
-                print 'No recognizable input! Not building parameters for ',memname
+                print('No recognizable input! Not building parameters for ',memname)
 
     def getMember(self,memname):
         """ Return the class instance for the member with name memname."""

@@ -3,6 +3,7 @@
 #include <Python.h>
 
 #include <numpy/arrayobject.h>
+#include <numpy/npy_3kcompat.h>
 
 #include "f2c.h"
 
@@ -355,9 +356,32 @@ static PyMethodDef arrdriz_methods[] =
     {0,            0}                             /* sentinel */
 };
 
-void initarrdriz() {
+#if defined(NPY_PY3K)
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "arrdriz",
+    NULL,
+    -1,
+    arrdriz_methods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+PyObject *PyInit_arrdriz(void)
+{
+    PyObject *m;
+    m = PyModule_Create(&moduledef);
+    import_array();
+    return m;
+}
+
+#else
+PyMODINIT_FUNC initarrdriz() {
 
     Py_InitModule("arrdriz", arrdriz_methods);
     import_array();
-
 }
+
+#endif

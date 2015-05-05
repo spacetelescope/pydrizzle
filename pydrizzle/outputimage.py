@@ -1,4 +1,4 @@
-from __future__ import division # confidence medium
+from __future__ import division, print_function # confidence medium
 import types
 import pyfits
 from stsci.tools import fileutil, readgeis
@@ -118,12 +118,12 @@ class OutputImage:
 
         if fileutil.findFile(self.output):
             if overwrite:
-                print 'Deleting previous output product: ',self.output
+                print('Deleting previous output product: ',self.output)
                 fileutil.removeFile(self.output)
 
             else:
-                print 'WARNING:  Output file ',self.output,' already exists and overwrite not specified!'
-                print 'Quitting... Please remove before resuming operations.'
+                print('WARNING:  Output file ',self.output,' already exists and overwrite not specified!')
+                print('Quitting... Please remove before resuming operations.')
                 raise IOError
 
         # Default value for NEXTEND when 'build'== True
@@ -133,22 +133,22 @@ class OutputImage:
             if self.outweight:
                 if overwrite:
                     if fileutil.findFile(self.outweight):
-                        print 'Deleting previous output WHT product: ',self.outweight
+                        print('Deleting previous output WHT product: ',self.outweight)
                     fileutil.removeFile(self.outweight)
                 else:
-                    print 'WARNING:  Output file ',self.outweight,' already exists and overwrite not specified!'
-                    print 'Quitting... Please remove before resuming operations.'
+                    print('WARNING:  Output file ',self.outweight,' already exists and overwrite not specified!')
+                    print('Quitting... Please remove before resuming operations.')
                     raise IOError
 
 
             if self.outcontext:
                 if overwrite:
                     if fileutil.findFile(self.outcontext):
-                        print 'Deleting previous output CTX product: ',self.outcontext
+                        print('Deleting previous output CTX product: ',self.outcontext)
                     fileutil.removeFile(self.outcontext)
                 else:
-                    print 'WARNING:  Output file ',self.outcontext,' already exists and overwrite not specified!'
-                    print 'Quitting... Please remove before resuming operations.'
+                    print('WARNING:  Output file ',self.outcontext,' already exists and overwrite not specified!')
+                    print('Quitting... Please remove before resuming operations.')
                     raise IOError
 
         # Get default headers from multi-extension FITS file
@@ -255,7 +255,7 @@ class OutputImage:
         # Now, build the output file
         ##########
         if self.build:
-            print '-Generating multi-extension output file: ',self.output
+            print('-Generating multi-extension output file: ',self.output)
             fo = pyfits.HDUList()
 
             # Add primary header to output file...
@@ -320,7 +320,7 @@ class OutputImage:
             del fo, hdu
 
         else:
-            print '-Generating simple FITS output: ',self.outdata
+            print('-Generating simple FITS output: ',self.outdata)
             fo = pyfits.HDUList()
 
             hdu = pyfits.PrimaryHDU(data=sciarr, header=prihdu.header)
@@ -454,7 +454,7 @@ class OutputImage:
             # on the image number for the chip
             _imgnum += 1
             _keyprefix = 'D%03d'%_imgnum
-            if not isinstance(pl['driz_mask'],types.StringType):
+            if type(pl['driz_mask']) != type(''):
                 _driz_mask_name = 'static mask'
             else:
                 _driz_mask_name = pl['driz_mask']
@@ -579,7 +579,7 @@ def getTemplates(fname,extlist):
     # NOTE: Returns 'pyfits.Header' objects, not HDU objects!
     #
     if fname == None:
-        print 'No data files for creating FITS output.'
+        print('No data files for creating FITS output.')
         raise Exception
 
     froot,fextn = fileutil.parseFilename(fname)

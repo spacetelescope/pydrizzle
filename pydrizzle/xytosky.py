@@ -1,4 +1,4 @@
-from __future__ import division # confidence high
+from __future__ import absolute_import, division, print_function # confidence high
 import string, copy, os
 
 import pyfits
@@ -6,7 +6,7 @@ import numpy as np
 from numpy import char as C
 from math import *
 
-import pydrizzle
+from . import pydrizzle
 from stsci.tools import wcsutil
 
 # Convenience definitions...
@@ -48,7 +48,7 @@ def XYtoSky_pars(input,x=None,y=None,coords=None,colnames=None,linear=yes,
             #
             x = _ftab[1].data.field(_clist[0]).tolist()
             y = _ftab[1].data.field(_clist[1]).tolist()
-            for i in xrange(len(x)):
+            for i in range(len(x)):
                 xy.append([x[i],y[i]])
             _ftab.close()
             del _ftab
@@ -64,7 +64,7 @@ def XYtoSky_pars(input,x=None,y=None,coords=None,colnames=None,linear=yes,
             else:
                 _clist = ['1','2']
             # Convert strings to ints for use in parsing the lines of the file
-            for n in xrange(len(_clist)): _clist[n] = string.atoi(_clist[n]) - 1
+            for n in range(len(_clist)): _clist[n] = string.atoi(_clist[n]) - 1
             # Read in lines and convert appropriate columns to X,Y lists
             for line in _lines:
                 line = line.strip()
@@ -108,8 +108,8 @@ def XYtoSky_pars(input,x=None,y=None,coords=None,colnames=None,linear=yes,
             # If they input a list, but don't specify an output file,
             # the only way they are going to get results is to print them
             # to the screen.
-            for i in xrange(len(ra)):
-                print 'RA (deg.) = ',ra[i],', Dec (deg.)= ',dec[i]
+            for i in range(len(ra)):
+                print('RA (deg.) = ',ra[i],', Dec (deg.)= ',dec[i])
 
     # If user wants to output to a file...
     if output:
@@ -167,7 +167,7 @@ def XYtoSky_pars(input,x=None,y=None,coords=None,colnames=None,linear=yes,
             _olines.append('# RA Dec positions computed by PyDrizzle\n')
             _olines.append('# Image: '+input+'\n')
             if coords:
-                for pos in xrange(len(ra)):
+                for pos in range(len(ra)):
                     _str = str(ra[pos])+'    '+str(dec[pos])+'\n'
                     _olines.append(_str)
             else:
@@ -205,7 +205,7 @@ def XYtoSky(input, pos, idckey='IDCTAB', linear=yes, verbose=no):
     # Start by making sure we have a valid extension specification.
     _insplit = string.split(input,'[')
     if len(_insplit) == 1:
-        raise IOError, 'No extension specified for input image!'
+        raise IOError('No extension specified for input image!')
 
     # Now we need to insure that the input is an array:
     if not isinstance(pos,np.ndarray):

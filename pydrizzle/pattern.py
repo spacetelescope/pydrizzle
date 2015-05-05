@@ -1,9 +1,9 @@
-from __future__ import division # confidence medium
+from __future__ import absolute_import, division # confidence medium
 from stsci.tools import fileutil, wcsutil
-import imtype, buildmask
-from exposure import Exposure
+from . import imtype, buildmask
+from .exposure import Exposure
 import numpy as np
-import drutil
+from . import drutil
 
 #from pydrizzle import __version__
 __version__ = '6.xxx'
@@ -195,8 +195,8 @@ class Pattern(object):
 
         if self.pars['section'] == None:
             self.pars['section'] = [None] * self.nmembers
-            extver_indx = range(1,self.nmembers+1)
-            group_indx = range(1,self.nmembers+1)
+            extver_indx = list(range(1,self.nmembers+1))
+            group_indx = list(range(1,self.nmembers+1))
         else:
             extver_indx = self.pars['section']
             group_indx = [1]

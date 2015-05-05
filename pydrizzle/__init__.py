@@ -1,4 +1,4 @@
-from __future__ import division # confidence high
+from __future__ import absolute_import, division, print_function # confidence high
 from stsci.tools import numerixenv
 numerixenv.check()
 
@@ -15,8 +15,8 @@ def PyDrizzle(input, output=None, field=None, units=None, section=None,
         idcdir=DEFAULT_IDCDIR,memmap=0,dqsuffix=None,prodonly=False,
         shiftfile=None,updatewcs=True):
 
-    import pydrizzle
-    import process_input
+    from . import pydrizzle
+    from . import process_input
 
     asndict, ivmlist, output = process_input.process_input(
             input, output=output, prodonly=prodonly, updatewcs=updatewcs,
@@ -40,5 +40,5 @@ def PyDrizzle(input, output=None, field=None, units=None, section=None,
     return p
 
 def help():
-    import pydrizzle
-    print pydrizzle._PyDrizzle.__doc__
+    from . import pydrizzle
+    print(pydrizzle._PyDrizzle.__doc__)
