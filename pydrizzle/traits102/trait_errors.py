@@ -15,17 +15,15 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
+from __future__ import absolute_import, division # confidence high
 
-import exceptions
-
-from trait_base import class_of
+from .trait_base import class_of
 
 #-------------------------------------------------------------------------------
 #  'TraitError' class:
 #-------------------------------------------------------------------------------
 
-class TraitError ( exceptions.Exception ):
+class TraitError ( Exception ):
 
     def __init__ ( self, args = None, name = None, info = None, value = None ):
         if name is None:

@@ -28,13 +28,14 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
+from __future__ import absolute_import, division # confidence high
 
+import sys
 import traceback
 
-from types           import MethodType
-from trait_base      import TraitNotifier
-from trait_delegates import TraitEvent
+from types            import MethodType
+from .trait_base      import TraitNotifier
+from .trait_delegates import TraitEvent
 
 #-------------------------------------------------------------------------------
 #  'TraitChangeNotifier' class:
@@ -220,11 +221,20 @@ class TraitChangeNotifyWrapper:
         self.handler = handler
         adjust       = 0
         func         = handler
+        
         if type( handler ) is MethodType:
-            func   = handler.im_func
             adjust = 1
-        self.__call__ = getattr( self, 'call_%d' %
-                                 (func.func_code.co_argcount - adjust) )
+            if sys.version_info[0] >= 3:
+                func = handler.__func__
+            else:
+                func = handler.im_func
+                
+        if sys.version_info[0] >= 3:
+            argcount = func.__code__.co_argcount - adjust
+        else:
+            argcount = func.func_code.co_argcount - adjust
+
+        self.__call__ = getattr( self, 'call_%d' % argcount )
 
     def call_0 ( self, object, trait_name, old, new ):
         try:
@@ -264,8 +274,11 @@ class StaticAnyTraitChangeNotifyWrapper:
 
     def __init__ ( self, handler ):
         self.handler  = handler
-        self.__call__ = getattr( self, 'call_%d' %
-                                       handler.func_code.co_argcount )
+        if sys.version_info[0] >= 3:
+            argcount = handler.__code__.co_argcount
+        else:
+            argcount = handler.func_code.co_argcount
+        self.__call__ = getattr( self, 'call_%d' % argcount )
 
     def call_0 ( self, object, trait_name, old, new ):
         try:
@@ -305,8 +318,11 @@ class StaticTraitChangeNotifyWrapper:
 
     def __init__ ( self, handler ):
         self.handler  = handler
-        self.__call__ = getattr( self, 'call_%d' %
-                                       handler.func_code.co_argcount )
+        if sys.version_info[0] >= 3:
+            argcount = handler.__code__.co_argcount
+        else:
+            argcount = handler.func_code.co_argcount
+        self.__call__ = getattr( self, 'call_%d' % argcount )
 
     def call_0 ( self, object, trait_name, old, new ):
         try:

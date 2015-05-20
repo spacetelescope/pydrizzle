@@ -87,47 +87,70 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence medium
+from __future__ import absolute_import, division, print_function # confidence medium
 from __future__ import nested_scopes
 
-from types import NoneType, IntType, LongType, FloatType, ComplexType,    \
-                  StringType, UnicodeType, ListType, TupleType, DictType, \
-                  FunctionType, ClassType, MethodType, InstanceType, TypeType, \
-                  BooleanType
+import sys
+if sys.version_info[0] >= 3:
+    ClassType = type
+    InstanceType = type
+    from types import MethodType, FunctionType
+else:
+    from types import MethodType, FunctionType, InstanceType, ClassType
 
-from trait_base      import SequenceTypes, Undefined, Self, trait_editors, \
+from .trait_base      import SequenceTypes, Undefined, Self, trait_editors, \
                             class_of, TraitNotifier
-from trait_errors    import TraitError, DelegationError
-from trait_handlers  import TraitHandler, TraitReadOnly, TraitInstance, \
+from .trait_errors    import TraitError, DelegationError
+from .trait_handlers  import TraitHandler, TraitReadOnly, TraitInstance, \
                             TraitFunction, TraitType, TraitEnum, TraitComplex, \
                             TraitMap, TraitString, AnyValue, TraitThisClass
-from trait_delegates import TraitGetterSetter, TraitDelegate
-from trait_notifiers import InstanceTraitNotifier, ClassTraitNotifier
+from .trait_delegates import TraitGetterSetter, TraitDelegate
+from .trait_notifiers import InstanceTraitNotifier, ClassTraitNotifier
 
 #-------------------------------------------------------------------------------
 #  Constants:
 #-------------------------------------------------------------------------------
 
-ConstantTypes = ( NoneType, IntType, LongType, FloatType, ComplexType,
-                  StringType, UnicodeType )
+import sys
+if sys.version_info[0] >= 3:
+    PY2 = False
+    long = int
+    unicode = str
+else:
+    PY2 = True
 
-PythonTypes   = ( StringType,   UnicodeType,  IntType,    LongType,
-                  FloatType,    ComplexType,  ListType,   TupleType,
-                  DictType,     FunctionType, MethodType, ClassType,
-                  InstanceType, TypeType,     NoneType )
+ConstantTypes = ( int, long, float, complex,
+                  str, unicode, type(None))
 
-TypeTypes     = ( StringType,   UnicodeType,  IntType,    LongType,
-                  FloatType,    ComplexType,  ListType,   TupleType,
-                  DictType,     BooleanType )
+PythonTypes   = ( str,      unicode,  int,    long,
+                  float,    complex,  list,   tuple,
+                  dict,     type,   FunctionType,
+                  MethodType,       ClassType,
+                  InstanceType,     type(None) )
 
-ClassTypes    = ( ClassType, TypeType )
+TypeTypes     = ( str,   unicode,  int,    long,
+                  float,    complex,  list,   tuple,
+                  dict,     bool )
+
+ClassTypes    = ( type, ClassType )
 
 CallableTypes = ( FunctionType, MethodType )
 
-CopyTypes     = ( ListType, DictType )
+CopyTypes     = ( list, dict )
 
-try: False
-except NameError: False,True = 0,1
+#-------------------------------------------------------------------------------
+# Create a custom class on the fly. Taken from six.py
+#-------------------------------------------------------------------------------
+
+def with_metaclass(meta, *bases):
+    """Create a base class with a metaclass."""
+    # This requires a bit of explanation: the basic idea is to make a dummy
+    # metaclass for one level of class instantiation that replaces itself with
+    # the actual metaclass.
+    class metaclass(meta):
+        def __new__(cls, name, this_bases, d):
+            return meta(name, bases, d)
+    return type.__new__(metaclass, 'temporary_class', (), {})
 
 #-------------------------------------------------------------------------------
 #  'Trait' class:
@@ -170,7 +193,7 @@ class Trait:
                         default_value = None
                 elif typeValue is InstanceType:
                     setter = TraitInstance( default_value.__class__ )
-                elif typeValue is StringType:
+                elif typeValue is str:
                     setter = TraitString( keywords )
                 elif typeValue in TypeTypes:
                     setter = TraitType( typeValue )
@@ -230,8 +253,8 @@ class Trait:
 
     def __getattr__ ( self, name ):
         if name[0:2] == '__':
-            raise AttributeError, "%s instance has no attribute '%s'" % (
-                                  self.__class__.__name__, name )
+            raise AttributeError("%s instance has no attribute '%s'" % (
+                                  self.__class__.__name__, name ))
         return None
 
     #----------------------------------------------------------------------------
@@ -248,7 +271,7 @@ class Trait:
                     enum.append( item )
                 elif typeItem in SequenceTypes:
                     self.do_list( item, enum, map, other )
-                elif typeItem is DictType:
+                elif typeItem is dict:
                     map.update( item )
                 elif typeItem in CallableTypes:
                     other.append( TraitFunction( item ) )
@@ -272,7 +295,7 @@ class Trait:
             return object
         if type( value ) not in CopyTypes:
             return object.__setattr__( name, value )
-        if type( value ) is ListType:
+        if type( value ) is list:
             return object.__setattr__( name, value[:] )
         return object.__setattr__( name, value.copy() )
 
@@ -308,8 +331,8 @@ class PythonTrait ( Trait ):
     #----------------------------------------------------------------------------
 
     def getattr ( self, object, name, value ):
-        raise AttributeError, "%s instance has no attribute '%s'" % (
-                              object.__class__.__name__, name )
+        raise AttributeError("%s instance has no attribute '%s'" % (
+                              object.__class__.__name__, name ))
 
     #----------------------------------------------------------------------------
     #  Validate the value for a particular object delegate's trait:
@@ -410,12 +433,12 @@ class HasTraits:
             getattr = trait.getter.getattr
         try:
             return getattr( self, name, trait.default_value )
-        except DelegationError, excp:
-            raise DelegationError, excp
-        except TraitError, excp:
-            raise TraitError, '%s %s' % ( str( excp )[:-1],
+        except DelegationError as excp:
+            raise DelegationError(excp)
+        except TraitError as excp:
+            raise TraitError('%s %s' % ( str( excp )[:-1],
                      'as the default value. The trait must be assigned a '
-                     'valid value before being used.' )
+                     'valid value before being used.' ))
 
     #----------------------------------------------------------------------------
     #  Handle setting a trait or normal attribute:
@@ -430,12 +453,12 @@ class HasTraits:
             try:
                 return trait.setter.setattr( self, name, value,
                                              trait.default_value )
-            except TraitError, excp:
+            except TraitError as excp:
                 excp.set_desc( trait.desc )
-                raise TraitError, excp
-        except TraitError, excp:
+                raise TraitError(excp)
+        except TraitError as excp:
             excp.set_desc( trait.desc )
-            raise TraitError, excp
+            raise TraitError(excp)
 
     #----------------------------------------------------------------------------
     #  Return the string representation of an object with traits:
@@ -463,7 +486,7 @@ class HasTraits:
                       lname, value, self._base_trait( name ).setter.info() ) )
             else:
                 result.append( '%s %s' % ( lname, value ) )
-        print '\n'.join( result )
+        print('\n'.join( result ))
 
     #----------------------------------------------------------------------------
     #  Shortcut for setting object traits:
@@ -537,9 +560,13 @@ class HasTraits:
         if filename is not None:
             fd = None
             try:
-                import cPickle
                 fd = open( filename, 'rb' )
-                self.clone_traits( cPickle.Unpickler( fd ).load() )
+                if sys.version_info[0] >= 3:
+                    import pickle
+                    self.clone_traits( pickle.Unpickler( fd ).load() )
+                else:
+                    import cPickle
+                    self.clone_traits( cPickle.Unpickler( fd ).load() )
             except:
                 if fd is not None:
                     fd.close()
@@ -556,9 +583,13 @@ class HasTraits:
             elif (filename is not None) and app.save_ok:
                 fd = None
                 try:
-                    import cPickle
                     fd = open( filename, 'wb' )
-                    cPickle.Pickler( fd, True ).dump( self )
+                    if sys.version_info[0] >= 3:
+                        import pickle
+                        pickle.Pickler( fd, True ).dump( self )
+                    else:
+                        import cPickle
+                        cPickle.Pickler( fd, True ).dump( self )
                 except:
                     if fd is not None:
                         fd.close()
@@ -860,8 +891,8 @@ class _MetaTraits ( type ):
 #  'HasObjectTraits' class:
 #-------------------------------------------------------------------------------
 
-class HasObjectTraits ( HasTraits, object ):
-    __metaclass__ = _MetaTraits
+class HasObjectTraits ( with_metaclass(_MetaTraits, HasTraits, object) ):
+    pass
 
 #-------------------------------------------------------------------------------
 #  'HasDynamicTraits' class:
@@ -883,9 +914,9 @@ class HasDynamicTraits ( HasTraits ):
 #  'HasDynamicObjectTraits' class:
 #-------------------------------------------------------------------------------
 
-class HasDynamicObjectTraits ( HasDynamicTraits, object ):
 
-    __metaclass__ = _MetaTraits
+class HasDynamicObjectTraits ( with_metaclass(_MetaTraits, HasDynamicTraits, object) ):
+    pass
 
 #-------------------------------------------------------------------------------
 #  'TraitProxy' class:
@@ -911,8 +942,8 @@ class TraitProxy ( HasDynamicTraits ):
 #  Handle circular module dependencies:
 #-------------------------------------------------------------------------------
 
-import trait_handlers
+from . import trait_handlers
 trait_handlers.Trait = Trait
 
-import trait_delegates
+from . import trait_delegates
 trait_delegates.HasTraits = HasTraits

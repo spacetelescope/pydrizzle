@@ -21,13 +21,18 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
+from __future__ import absolute_import, division, nested_scopes # confidence high
 
-from __future__   import nested_scopes
-from types        import StringType, MethodType, InstanceType, ClassType, \
-                         TypeType
-from trait_base   import Undefined, CoercableFuncs, class_of, trait_editors
-from trait_errors import TraitError, DelegationError
+import sys
+if sys.version_info[0] >= 3:
+    ClassType = type
+    InstanceType = type 
+    from types import MethodType
+else:
+    from types import MethodType, InstanceType, ClassType
+
+from .trait_base   import Undefined, CoercableFuncs, class_of, trait_editors
+from .trait_errors import TraitError, DelegationError
 
 #-------------------------------------------------------------------------------
 #  Constants:
@@ -63,7 +68,7 @@ class TraitDelegate (TraitGetterSetter ):
         self.setattr   = self.setattr # Performance hack!
         self.prefix    = ''
         self.mutate    = False
-        if type( mutate_or_prefix ) is StringType:
+        if type( mutate_or_prefix ) is str:
             self.prefix = mutate_or_prefix
             self.name   = self.replace_name
             if mutate_or_prefix[-1:] == '*':
@@ -160,12 +165,12 @@ class TraitDelegate (TraitGetterSetter ):
         if getattr( object, self._delegate ) is None:
             if value is not Undefined:
                 return value
-            raise DelegationError, (
+            raise DelegationError(
                      "Attempted to get the '%s' trait of %s instance, "
                      "but its '%s' delegate is not defined." % (
                      name, class_of( object ), self._delegate ) )
         else:
-            raise DelegationError, (
+            raise DelegationError(
                      "Attempted to get the '%s' trait of %s instance, "
                      "but its '%s' delegate does not have the trait defined."
                      % ( name, class_of( object ), self._delegate ) )
@@ -183,12 +188,12 @@ class TraitDelegate (TraitGetterSetter ):
             if delegate is None:
                 if value is not Undefined:
                     return value
-                raise DelegationError, (
+                raise DelegationError(
                          "Attempted to get the '%s' trait of %s instance, "
                          "but its '%s' delegate is not defined." % (
                          name, class_of( object ), self._delegate ) )
             else:
-                raise DelegationError, (
+                raise DelegationError(
                          "Attempted to get the '%s' trait of %s instance, "
                          "but its '%s' delegate does not have the trait defined."
                          % ( name, class_of( object ), self._delegate ) )
@@ -198,8 +203,8 @@ class TraitDelegate (TraitGetterSetter ):
     #----------------------------------------------------------------------------
 
     def getattr_locked ( self, object, name, value ):
-        raise AttributeError, "%s instance has no attribute '%s'" % (
-                              object.__class__.__name__, name )
+        raise AttributeError("%s instance has no attribute '%s'" % (
+                              object.__class__.__name__, name ))
 
     #----------------------------------------------------------------------------
     #  Validate the value for a particular object delegate's trait:
@@ -216,17 +221,17 @@ class TraitDelegate (TraitGetterSetter ):
                 delegate = handler.delegate( delegate )
         except AttributeError:
             if delegate is None:
-                raise DelegationError, (
+                raise DelegationError(
                          "Attempted to set the '%s' trait of %s instance, "
                          "but its '%s' delegate is not defined." % (
                          name, class_of( object ), self._delegate ) )
             else:
-                raise DelegationError, (
+                raise DelegationError(
                          "Attempted to set the '%s' trait of %s instance, but "
                          "its '%s' delegate does not have any traits defined." %
                          ( name, class_of( object ), self._delegate ) )
         except:
-            raise DelegationError, (
+            raise DelegationError(
                      "Attempted to set the '%s' trait of %s instance, but its "
                      "'%s' delegate does not have a trait with that name." % (
                      name, class_of( object ), self._delegate ) )
@@ -235,7 +240,7 @@ class TraitDelegate (TraitGetterSetter ):
             # Modify the delegate object:
             try:
                 return handler.setattr( delegate, delegate_name, value, default )
-            except TraitError, excp:
+            except TraitError as excp:
                 # The exception is for the wrong object. Fix it, then pass it on:
                 excp.set_desc( delegate._trait( delegate_name ).desc, object )
                 raise excp
@@ -243,7 +248,7 @@ class TraitDelegate (TraitGetterSetter ):
             # Modify the original object:
             try:
                 return handler.setattr( object, name, value, default )
-            except TraitError, excp:
+            except TraitError as excp:
                 # Add the trait description to the exception:
                 excp.set_desc( delegate._trait( delegate_name ).desc )
                 raise excp
@@ -253,8 +258,8 @@ class TraitDelegate (TraitGetterSetter ):
     #----------------------------------------------------------------------------
 
     def setattr_locked ( self, object, name, value, default ):
-        raise TraitError, "%s instance does not have a '%s' trait" % (
-                          class_of( object ).capitalize(), name )
+        raise TraitError("%s instance does not have a '%s' trait" % (
+                          class_of( object ).capitalize(), name ))
 
     #----------------------------------------------------------------------------
     #  Get the base trait for a particular object delegate's trait:
@@ -272,18 +277,18 @@ class TraitDelegate (TraitGetterSetter ):
             return trait
         except AttributeError:
             if delegate is None:
-                raise DelegationError, (
+                raise DelegationError(
                          "Attempted to get the underlying '%s' trait of a "
                          "%s instance, but its '%s' delegate is not defined." % (
                          name, object.__class__.__name__, self._delegate ) )
             else:
-                raise DelegationError, (
+                raise DelegationError(
                          "Attempted to get the underlying '%s' trait of a "
                          "%s instance, but its '%s' delegate does not have any "
                          "traits defined." %
                          ( name, object.__class__.__name__, self._delegate ) )
         except:
-            raise DelegationError, (
+            raise DelegationError(
                      "Attempted to get the underlying '%s' trait of a "
                      "%s instance, but its '%s' delegate does not have a "
                      "trait with that name." % (
@@ -409,7 +414,7 @@ class TraitEvent ( TraitGetterSetter ):
             kind      = type( klass )
             if kind is not ClassType:
                 self.validate = self.type_validate
-                if kind is not TypeType:
+                if kind is not type:
                     self.kind = kind
                 try:
                     self.coerce = CoercableFuncs[ kind ]
@@ -419,7 +424,7 @@ class TraitEvent ( TraitGetterSetter ):
     def validate ( self, object, name, value ):
         if isinstance( value, self.kind ):
             return value
-        raise TraitError, ( object, name,
+        raise TraitError( object, name,
                           '%s instance' % class_of( self.kind.__name__ ), value )
 
     def any_value_validate ( self, object, name, value ):
@@ -434,7 +439,7 @@ class TraitEvent ( TraitGetterSetter ):
             kind = class_of( value )
         else:
             kind = repr( value )
-        raise TraitError, ( object, name, 'of %s' % str( self.kind )[1:-1],
+        raise TraitError( object, name, 'of %s' % str( self.kind )[1:-1],
                           '%s (i.e. %s)' % ( str( type( value ) )[1:-1], kind ) )
 
     def identity ( self, value ):
@@ -447,7 +452,7 @@ class TraitEvent ( TraitGetterSetter ):
                                   self.validate( object, name, value ), default )
 
     def getattr ( self, object, name, value ):
-        raise AttributeError, ( "the %s trait of %s instance is an 'event', "
+        raise AttributeError( "the %s trait of %s instance is an 'event', "
               "which is write only" % ( name, class_of( object ) ) )
 
 #-------------------------------------------------------------------------------
@@ -473,12 +478,12 @@ class TraitProperty ( TraitGetterSetter ):
             self.get_editor = self._get_editor
 
     def setattr ( self, object, name, value, default ):
-        raise AttributeError, "the %s trait of %s instance is read only" % (
-                              name, class_of( object ) )
+        raise AttributeError( "the %s trait of %s instance is read only" % (
+                              name, class_of( object ) ) )
 
     def getattr ( self, object, name, value ):
-        raise AttributeError, "the %s trait of %s instance is write only" % (
-                              name, class_of( object ) )
+        raise AttributeError( "the %s trait of %s instance is write only" % (
+                              name, class_of( object ) ) )
 
     def _get_editor ( self, trait ):
         return trait_editors().TraitEditorText( evaluate = True,
@@ -492,8 +497,11 @@ class PropertySetWrapper:
 
     def __init__ ( self, handler ):
         self.handler  = handler
-        self.__call__ = getattr( self, 'call_%d' %
-                                       handler.func_code.co_argcount )
+        if sys.version_info[0] >= 3:
+            argcount = handler.__code__.co_argcount
+        else:
+            argcount = handler.func_code.co_argcount
+        self.__call__ = getattr( self, 'call_%d' % argcount )
 
     def call_0 ( self, object, trait_name, value, default ):
         return self.handler()
@@ -515,8 +523,11 @@ class PropertyGetWrapper:
 
     def __init__ ( self, handler ):
         self.handler  = handler
-        self.__call__ = getattr( self, 'call_%d' %
-                                       handler.func_code.co_argcount )
+        if sys.version_info[0] >= 3:
+            argcount = handler.__code__.co_argcount
+        else:
+            argcount = handler.func_code.co_argcount
+        self.__call__ = getattr( self, 'call_%d' % argcount )
 
     def call_0 ( self, object, trait_name, default ):
         return self.handler()

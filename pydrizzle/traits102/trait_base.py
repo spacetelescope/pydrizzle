@@ -22,15 +22,19 @@
 #-------------------------------------------------------------------------------
 from __future__ import division # confidence high
 
-from types import ListType, TupleType, StringType, UnicodeType, IntType, \
-                            LongType, FloatType, ComplexType, BooleanType
-
 import sys
+if sys.version_info[0] >= 3:
+    PY2 = False
+    long = int
+    unicode = str
+else:
+    PY2 = True
+
 #-------------------------------------------------------------------------------
 #  Constants:
 #-------------------------------------------------------------------------------
 
-SequenceTypes = ( ListType, TupleType )
+SequenceTypes = ( list, tuple )
 
 TraitNotifier = '__trait_notifier__'
 
@@ -133,24 +137,28 @@ def booleanx ( arg ):
 #  Constants:
 #-------------------------------------------------------------------------------
 
-NumericFuncs = { IntType:   ( intx,   'an integer' ),
-                 LongType:  ( longx,  'a long integer' ),
-                 FloatType: ( floatx, 'a floating point number' ) }
+NumericFuncs = { int:   ( intx,   'an integer' ),
+                 float: ( floatx, 'a floating point number' ) }
 
-StringTypes  = ( StringType, UnicodeType, IntType, LongType, FloatType,
-                 ComplexType )
-
+if PY2:
+    NumericFuncs[long] = ( longx,  'a long integer' )
+    StringTypes  = ( str, unicode, int, long, float, complex )
+else:
+    StringTypes  = ( str, int, float, complex )
+    
 #-------------------------------------------------------------------------------
 #  Define a mapping from types to coercion functions:
 #-------------------------------------------------------------------------------
 
-CoercableFuncs = { IntType:     intx,
-                   LongType:    longx,
-                   FloatType:   floatx,
-                   ComplexType: complexx,
-                   StringType:  strx,
-                   UnicodeType: unicodex,
-                   BooleanType: booleanx }
+CoercableFuncs = { int:     intx,
+                   float:   floatx,
+                   str:     strx,
+                   bool:    booleanx, 
+                   complex: complexx }
+
+if PY2:
+    CoercableFuncs[long] = longx
+    CoercableFuncs[unicode] = unicodex
 
 #-------------------------------------------------------------------------------
 #  Return the module defining the set of trait editors we should use:
@@ -201,7 +209,7 @@ def trait_editors ( module_name = None ):
 #-------------------------------------------------------------------------------
 
 def class_of ( object ):
-    if type( object ) is StringType:
+    if type( object ) is str:
         name = object
     else:
         name = object.__class__.__name__

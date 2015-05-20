@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function # confidence medium
-from drutil import DEFAULT_IDCDIR
+from .drutil import DEFAULT_IDCDIR
 from stsci.tools import fileutil, wcsutil, asnutil
 
 import string, os, types, sys
 import shutil
-import arrdriz
+from . import arrdriz
 from . import outputimage
 from .pattern import *
 from .observations import *

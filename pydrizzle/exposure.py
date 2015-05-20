@@ -16,10 +16,12 @@
 #           0.1.4 -- Implemented support for providing subarray sections
 #                   of DGEOFILEs for subarray exposures.
 #
-from __future__ import division, print_function # confidence medium
+from __future__ import absolute_import, division, print_function # confidence medium
 
 import os
-import buildmask, drutil, arrdriz
+from . import buildmask
+from . import drutil
+from . import arrdriz
 from .obsgeometry import ObsGeometry
 from stsci.tools import fileutil, wcsutil
 from math import ceil,floor

@@ -14,7 +14,7 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence medium
+from __future__ import absolute_import, division # confidence medium
 
 import sys
 import os.path
@@ -23,13 +23,15 @@ import re
 from string      import ascii_lowercase
 from wxPython    import wx
 from wxmenu      import MakeMenu
-from traits      import Trait, HasTraits, TraitError, HasDynamicTraits, \
+from .traits      import Trait, HasTraits, TraitError, HasDynamicTraits, \
                         trait_editors
-from trait_sheet import TraitEditor, TraitSheetHandler, TraitMonitor, \
+from .trait_sheet import TraitEditor, TraitSheetHandler, TraitMonitor, \
                         TraitGroup, TraitGroupList, default_trait_sheet_handler
-from types       import DictType, ListType, TupleType, ModuleType, \
-                        StringType, FloatType
+from types       import ModuleType
 from math        import log10
+
+if sys.version_info[0] >= 3:
+    from functools import reduce
 
 #-------------------------------------------------------------------------------
 #  Module initialization:
@@ -42,7 +44,7 @@ trait_editors( __name__ )
 #-------------------------------------------------------------------------------
 
 # Basic sequence types:
-basic_sequence_types = [ ListType, TupleType ]
+basic_sequence_types = [ list, tuple ]
 
 # Standard width of an image bitmap:
 standard_bitmap_width = 120
@@ -374,7 +376,7 @@ class TraitSheet ( wx.wxPanel ):
         # Try to make sure that we now have either a single TraitGroup, or
         # a list of TraitGroups:
         kind = type( traits )
-        if kind is StringType:
+        if kind is str:
             # Convert the single trait name into a TraitGroup:
             traits = TraitGroup( traits, show_border = False, style = 'custom' )
         elif ((kind in basic_sequence_types) or
@@ -587,7 +589,7 @@ class wxTraitEditor ( TraitEditor ):
             self.set( control.object, control.trait_name,
                       control.GetValue(), control.handler )
             return True
-        except TraitError, excp:
+        except TraitError as excp:
             self.error( control.description, excp, control )
             return False
 
@@ -732,7 +734,7 @@ class TraitEditorText ( wxTraitEditor ):
                 self.set( object, trait_name, self.get_value( dialog ),
                           handler )
                 return True
-            except TraitError, excp:
+            except TraitError as excp:
                 self.error( description, excp, object.window )
                 return False
 
@@ -761,7 +763,7 @@ class TraitEditorText ( wxTraitEditor ):
         try:
             self.set( control.object, control.trait_name,
                       self.get_value( control ), control.handler )
-        except TraitError, excp:
+        except TraitError as excp:
             self.error( control.description, excp, control )
 
     #----------------------------------------------------------------------------
@@ -791,7 +793,7 @@ class TraitEditorText ( wxTraitEditor ):
         value = control.GetValue().strip()
         if self.evaluate:
             value = eval( value )
-        if not self.dic.has_key( value ):
+        if value not in self.dic:
             return value
         return self.dic[ value ]
 
@@ -807,9 +809,9 @@ class TraitEditorEnum ( wxTraitEditor ):
 
     def __init__ ( self, values, cols = 1 ):
         self.cols   = cols
-        self.mapped = (type( values ) is DictType)
+        self.mapped = (type( values ) is dict)
         if self.mapped:
-            sorted = values.values()
+            sorted = list(values.values())
             sorted.sort()
             col = sorted[0].find( ':' ) + 1
             if col > 0:
@@ -825,7 +827,7 @@ class TraitEditorEnum ( wxTraitEditor ):
                 if isinstance( handler, Trait ):
                     handler = handler.setter
                 if hasattr( handler, 'map' ):
-                    values = handler.map.keys()
+                    values = list(handler.map.keys())
                     values.sort()
                 else:
                     values = handler.values
@@ -1100,7 +1102,7 @@ class TraitEditorCheckList ( wxTraitEditor ):
     def __init__ ( self, values, cols = 1 ):
         self.cols   = cols
         self.values = values
-        if type( values[0] ) is StringType:
+        if type( values[0] ) is str:
             self.values = [ ( x, x.capitalize() ) for x in values ]
         self.mapping = mapping = {}
         for value, key in self.values:
@@ -1198,7 +1200,7 @@ class TraitEditorCheckList ( wxTraitEditor ):
     #----------------------------------------------------------------------------
 
     def is_string ( self, object, trait_name ):
-        return (type( getattr( object, trait_name ) ) is StringType)
+        return (type( getattr( object, trait_name ) ) is str)
 
     #----------------------------------------------------------------------------
     #  Return the current value of the object trait:
@@ -1214,7 +1216,7 @@ class TraitEditorCheckList ( wxTraitEditor ):
     def parse_value ( self, value ):
         if value is None:
             return []
-        if type( value ) is not StringType:
+        if type( value ) is not str:
             return value
         return [ x.strip() for x in value.split( ',' ) ]
 
@@ -1346,7 +1348,7 @@ class TraitEditorRange ( TraitEditorEnum ):
             handler = handler.setter
         self.low      = handler.low
         self.high     = handler.high
-        self.is_float = (type( self.low ) is FloatType)
+        self.is_float = (type( self.low ) is float)
         self.cols     = cols
         self.auto_set = auto_set
         self.mapped   = False
@@ -1422,7 +1424,7 @@ class TraitEditorRange ( TraitEditorEnum ):
     #----------------------------------------------------------------------------
 
     def custom_editor ( self, object, trait_name, description, handler, parent ):
-        if ((type( self.low ) is FloatType) or
+        if ((type( self.low ) is float) or
             (abs( self.high - self.low ) > 15)):
             return self.simple_editor( object, trait_name, description,
                                        handler, parent )
@@ -1436,7 +1438,7 @@ class TraitEditorRange ( TraitEditorEnum ):
     #----------------------------------------------------------------------------
 
     def all_values ( self ):
-        return [ str( x ) for x in xrange( self.low, self.high + 1 ) ]
+        return [ str( x ) for x in range( self.low, self.high + 1 ) ]
 
     #----------------------------------------------------------------------------
     #  Return the current value of the object trait:
@@ -1471,7 +1473,7 @@ class TraitEditorRange ( TraitEditorEnum ):
             if slider is not None:
                 slider.SetValue( int( ((float( value ) - self.low) /
                                       (self.high - self.low)) * 10000 ) )
-        except TraitError, excp:
+        except TraitError as excp:
             self.error( control.description, excp, control )
 
     #----------------------------------------------------------------------------
@@ -1880,7 +1882,7 @@ class TraitEditorList ( wxTraitEditor ):
         cur_control = self.cur_control
         result      = []
         controls = cur_control.GetParent().GetChildren()
-        for i in xrange( 0, len( controls ), 2 ):
+        for i in range( 0, len( controls ), 2 ):
             result.append( ( controls[i], controls[i+1] ) )
         result.sort( lambda x, y: cmp( x[1].object.index, y[1].object.index ) )
         return result
@@ -1892,7 +1894,7 @@ class TraitEditorList ( wxTraitEditor ):
     def reload_sizer ( self, controls, extra = 0 ):
         list  = self.cur_control.GetParent()
         sizer = list.GetSizer()
-        for i in xrange( 2 * len( controls ) + extra ):
+        for i in range( 2 * len( controls ) + extra ):
             sizer.Remove( 0 )
         index = 0
         for control, pcontrol in controls:
@@ -2043,7 +2045,7 @@ def bitmap_cache ( name, standard_size, path = None ):
     global app_path, traits_path
     if path is None:
         if traits_path is None:
-            import traits
+            from . import traits
             traits_path = os.path.join(
                   os.path.dirname( traits.__file__ ), 'images' )
         path = traits_path
@@ -2429,11 +2431,11 @@ def str_to_font ( object, name, value ):
         facename   = []
         for word in value.split():
             lword = word.lower()
-            if font_families.has_key( lword ):
+            if lword in font_families:
                 family = font_families[ lword ]
-            elif font_styles.has_key( lword ):
+            elif lword in font_styles:
                 style = font_styles[ lword ]
-            elif font_weights.has_key( lword ):
+            elif lword in font_weights:
                 weight = font_weights[ lword ]
             elif lword == 'underline':
                 underline = 1
@@ -2446,7 +2448,7 @@ def str_to_font ( object, name, value ):
                           ' '.join( facename ) )
     except:
         pass
-    raise TraitError, ( object, name, 'a font descriptor string',
+    raise TraitError( object, name, 'a font descriptor string',
                            repr( value ) )
 
 str_to_font.info = ( "a string describing a font (e.g. '12 pt bold italic "

@@ -14,19 +14,19 @@
 #  (c) Copyright 2002 by Enthought, Inc.
 #
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
+from __future__ import absolute_import, division # confidence high
 
-from trait_base      import Undefined, Self, trait_editors
-from trait_errors    import TraitError, DelegationError
-from traits          import HasTraits, HasObjectTraits, HasDynamicTraits, \
+from .trait_base      import Undefined, Self, trait_editors
+from .trait_errors    import TraitError, DelegationError
+from .traits          import HasTraits, HasObjectTraits, HasDynamicTraits, \
                             HasDynamicObjectTraits, Trait, Disallow, ReadOnly, \
                             DefaultPythonTrait, TraitProxy
-from trait_handlers  import TraitHandler, TraitRange, TraitType, TraitString,  \
+from .trait_handlers  import TraitHandler, TraitRange, TraitType, TraitString,  \
                             TraitInstance, TraitThisClass, TraitClass, \
                             TraitFunction, TraitEnum, TraitMap
-from trait_handlers  import TraitList, TraitPrefixList, TraitPrefixMap,        \
+from .trait_handlers  import TraitList, TraitPrefixList, TraitPrefixMap,        \
                             TraitComplex, AnyValue
-from trait_delegates import TraitGetterSetter, TraitDelegate, \
+from .trait_delegates import TraitGetterSetter, TraitDelegate, \
                             TraitDelegateSynched, TraitEvent, TraitProperty
-from trait_sheet     import TraitSheetHandler, TraitEditor, TraitGroup, \
+from .trait_sheet     import TraitSheetHandler, TraitEditor, TraitGroup, \
                             TraitGroupItem, TraitGroupList, merge_trait_groups

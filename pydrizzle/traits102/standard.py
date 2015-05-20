@@ -15,11 +15,11 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
+from __future__ import absolute_import, division # confidence high
 
-from traits         import Trait
-from trait_handlers import TraitString, TraitPrefixList, TraitEnum, TraitList
-from trait_base     import trait_editors
+from .traits         import Trait
+from .trait_handlers import TraitString, TraitPrefixList, TraitEnum, TraitList
+from .trait_base     import trait_editors
 
 #-------------------------------------------------------------------------------
 #  Trait Editor definitions:

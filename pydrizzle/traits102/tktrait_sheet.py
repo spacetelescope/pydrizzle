@@ -14,25 +14,35 @@
 #--------------------------------------------------------------------------------
 #  Imports:
 #--------------------------------------------------------------------------------
-from __future__ import division # confidence medium
+from __future__ import absolute_import, division, print_function # confidence medium
 
 import sys
 import os.path
 import re
 
-import Tkinter        as tk
-import tkMessageBox   as mb
-import tkSimpleDialog as sd
-import tkColorChooser as cc
-import Pmw
-import tkFont
+if sys.version_info[0] >= 3:
+    import tkinter              as tk
+    import tkinter.messagebox   as mb
+    import tkinter.simpledialog as sd
+    import tkinter.colorchooser as cc
+    import tkinter.font         as tf
+else:
+    import Tkinter              as tk
+    import tkMessageBox         as mb
+    import tkSimpleDialog       as sd
+    import tkColorChooser       as cc
+    import tkFont               as tf
 
-from traits      import Trait, HasTraits, TraitError, HasDynamicTraits, \
+if sys.version_info[0] >= 3:
+    from functools import reduce
+
+import Pmw
+
+from .traits      import Trait, HasTraits, TraitError, HasDynamicTraits, \
                         trait_editors
-from trait_sheet import TraitEditor, TraitSheetHandler, TraitMonitor, \
+from .trait_sheet import TraitEditor, TraitSheetHandler, TraitMonitor, \
                         TraitGroup, TraitGroupList, default_trait_sheet_handler
-from types       import DictType, ListType, TupleType, ModuleType, \
-                        StringType, FloatType
+from types       import ModuleType
 
 #-------------------------------------------------------------------------------
 #  Module initialization:
@@ -49,7 +59,7 @@ TRUE  = 1
 FALSE = 0
 
 # Basic sequence types:
-basic_sequence_types = [ ListType, TupleType ]
+basic_sequence_types = [ list, tuple ]
 
 # Standard width of an image bitmap:
 standard_bitmap_width = 120
@@ -211,7 +221,7 @@ class TraitSheet ( tk.Frame ):
         # Try to make sure that we now have either a single TraitGroup, or
         # a list of TraitGroups:
         kind = type( traits )
-        if kind == StringType:
+        if kind == str:
             # Convert the single trait name into a TraitGroup:
             traits = TraitGroup( traits, show_border = FALSE )
         elif ((kind in basic_sequence_types) or
@@ -465,12 +475,12 @@ class TraitEditorText ( tkTraitEditor ):
                                   initialvalue = getattr( object, trait_name ) )
             if value is None:
                 return
-            if self.dic.has_key( value ):
+            if value in self.dic:
                 value = self.dic[ value ]
             try:
                 self.set( object, trait_name, value, handler )
                 self.update( object, trait_name, control )
-            except TraitError, excp:
+            except TraitError as  excp:
                 self.error( description, excp, object.window )
 
     #-----------------------------------------------------------------------------
@@ -509,7 +519,7 @@ class TraitEditorText ( tkTraitEditor ):
         try:
             self.set( control.object, control.trait_name,
                       self.get_value( control ), control.handler )
-        except TraitError, excp:
+        except TraitError as excp:
             self.error( control.description, excp, control )
 
     #-----------------------------------------------------------------------------
@@ -534,7 +544,7 @@ class TraitEditorText ( tkTraitEditor ):
 
     def get_value ( self, control ):
         value = control.var.get().strip()
-        if not self.dic.has_key( value ):
+        if value not in self.dic:
             return value
         return self.dic[ value ]
 
@@ -550,9 +560,9 @@ class TraitEditorEnum ( tkTraitEditor ):
 
     def __init__ ( self, values, cols = 1 ):
         self.cols   = cols
-        self.mapped = (type( values ) is DictType)
+        self.mapped = (type( values ) is dict)
         if self.mapped:
-            sorted = values.values()
+            sorted = list(values.values())
             sorted.sort()
             col = sorted[0].find( ':' ) + 1
             if col > 0:
@@ -568,7 +578,7 @@ class TraitEditorEnum ( tkTraitEditor ):
                 if isinstance( handler, Trait ):
                     handler = handler.setter
                 if hasattr( handler, 'map' ):
-                    values = handler.map.keys()
+                    values = list(handler.map.keys())
                     values.sort()
                 else:
                     values = handler.values
@@ -802,7 +812,7 @@ class TraitEditorCheckList ( tkTraitEditor ):
     def __init__ ( self, values, cols = 1 ):
         self.cols   = cols
         self.values = values
-        if type( values[0] ) is StringType:
+        if type( values[0] ) is str:
             self.values = [ ( x, x.capitalize() ) for x in values ]
         self.mapping = mapping = {}
         for value, key in self.values:
@@ -902,7 +912,7 @@ class TraitEditorCheckList ( tkTraitEditor ):
     #----------------------------------------------------------------------------
 
     def is_string ( self, object, trait_name ):
-        return (type( getattr( object, trait_name ) ) is StringType)
+        return (type( getattr( object, trait_name ) ) is str)
 
     #----------------------------------------------------------------------------
     #  Return the current value of the object trait:
@@ -912,7 +922,7 @@ class TraitEditorCheckList ( tkTraitEditor ):
         value = getattr( object, trait_name )
         if value is None:
             return []
-        if type( value ) is not StringType:
+        if type( value ) is not str:
             return value
         return [ x.strip() for x in value.split( ',' ) ]
 
@@ -997,7 +1007,7 @@ class TraitEditorRange ( TraitEditorEnum ):
         self.high = handler.high
         self.cols = cols
         self.auto_set = auto_set
-        self.is_float = (type( self.low ) is FloatType)
+        self.is_float = (type( self.low ) is float)
 
     #-----------------------------------------------------------------------------
     #  Create an in-place editable view of the current value of the
@@ -1047,7 +1057,7 @@ class TraitEditorRange ( TraitEditorEnum ):
     #----------------------------------------------------------------------------
 
     def all_values ( self ):
-        return [ str( x ) for x in xrange( self.low, self.high + 1 ) ]
+        return [ str( x ) for x in range( self.low, self.high + 1 ) ]
 
     #----------------------------------------------------------------------------
     #  Return the current value of the object trait:
@@ -1095,7 +1105,7 @@ class TraitEditorRange ( TraitEditorEnum ):
         try:
             self.set( control.object, control.trait_name,
                       control.var.get().strip(), control.handler )
-        except TraitError, excp:
+        except TraitError as excp:
             self.error( control.description, excp, control )
 
     #-----------------------------------------------------------------------------
@@ -1172,7 +1182,7 @@ def bitmap_cache ( name, path = None ):
     global app_path, traits_path
     if path is None:
         if traits_path is None:
-            import traits
+            from . import traits
             traits_path = os.path.join(
                   os.path.dirname( traits.__file__ ), 'images' )
         path = traits_path
@@ -1268,7 +1278,7 @@ standard_colors = {
 #--------------------------------------------------------------------------------
 
 def num_to_color ( object, name, value ):
-    if type( value ) is StringType:
+    if type( value ) is str:
         if ((len( value ) == 7) and (value[0] == '#') and
             (eval( '0x' + value[1:] ) >= 0)):
             return value
@@ -1442,12 +1452,12 @@ def str_to_font ( object, name, value ):
                     family.append( word )
         if len( family ) == 0:
             family = [ 'Helvetica' ]
-        return tkFont.Font( family     = ' '.join( family ),
-                            size       = size,
-                            weight     = weight,
-                            slant      = slant,
-                            underline  = underline,
-                            overstrike = overstrike )
+        return tf.Font( family     = ' '.join( family ),
+                        size       = size,
+                        weight     = weight,
+                        slant      = slant,
+                        underline  = underline,
+                        overstrike = overstrike )
     except:
         pass
     raise TraitError
@@ -1598,7 +1608,7 @@ class TraitEditorFont ( tkTraitEditor ):
 #  Define a Tkinter specific font trait:
 #-------------------------------------------------------------------------------
 
-font_trait = Trait( 'Arial 10', tkFont.Font, str_to_font,
+font_trait = Trait( 'Arial 10', tf.Font, str_to_font,
                           editor = TraitEditorFont() )
 
 #-------------------------------------------------------------------------------

@@ -35,13 +35,14 @@
 #===============================================================================
 #  Imports:
 #===============================================================================
-from __future__ import division # confidence high
+from __future__ import division, print_function # confidence high
 
-import Tkinter as tk
 import re
-import string
-
-from types  import StringType
+import sys
+if sys.version_info[0] >= 3:
+    import Tkinter as tk
+else:
+    import tkinter as tk
 
 #===============================================================================
 #  Constants:
@@ -123,13 +124,17 @@ class MakeMenu:
                 handler = line[ col + 1: ].strip()
                 if handler != '':
                     try:
-                        exec 'def handler(event=None,self=self.owner):\n %s\n' % handler
+                        exec('def handler(event=None,self=self.owner):\n %s\n' % handler)
                     except:
                         handler = null_handler
                 else:
                     try:
-                        exec 'def handler(event=None,self=self.owner):\n%s\n' % (
-                             self.get_body( indented ), ) in globals()
+                        if sys.version_info[0] >= 3:
+                           exec('def handler(event=None,self=self.owner):\n%s\n' % (
+                                 self.get_body( indented ), ), globals())
+                        else:
+                            exec 'def handler(event=None,self=self.owner):\n%s\n' % (
+                                 self.get_body( indented ), ) in globals()
                     except:
                         handler = null_handler
                 not_checked = checked = disabled = FALSE
@@ -194,7 +199,7 @@ class MakeMenu:
                 break
             result.append( line )
             self.index += 1
-        result = string.join( result, '\n' ).rstrip()
+        result = '\n'.join( result ).rstrip()
         if result != '':
             return result
         return '  pass'
@@ -249,19 +254,19 @@ class MakeMenuItem:
 #  remove them if it does:
 #===============================================================================
 
-def option_check ( test, string ):
+def option_check ( test, str ):
     result = []
     for char in test:
-        col = string.find( char )
+        col = str.find( char )
         result.append( col >= 0 )
         if col >= 0:
-            string = string[ : col ] + string[ col + 1: ]
-    return result + [ string.strip() ]
+            str = str[ : col ] + str[ col + 1: ]
+    return result + [ str.strip() ]
 
 #===============================================================================
 #  Null menu option selection handler:
 #===============================================================================
 
 def null_handler ( event ):
-    print 'null_handler invoked'
+    print('null_handler invoked')
     pass

@@ -32,10 +32,7 @@
 #  (c) Copyright 2002, 2003 by Enthought, Inc.
 #
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
-
-try: False
-except NameError: False,True = 0,1
+from __future__ import absolute_import, division # confidence high
 
 #-------------------------------------------------------------------------------
 #  Imports:
@@ -44,11 +41,15 @@ except NameError: False,True = 0,1
 import sys
 import re
 
-from types           import StringType, InstanceType, TypeType
-from trait_base      import strx, SequenceTypes, Undefined, NumericFuncs, \
+if sys.version_info[0] >= 3:
+   InstanceType = type
+else:
+   from types import InstanceType
+
+from .trait_base      import strx, SequenceTypes, Undefined, NumericFuncs, \
                             StringTypes, CoercableFuncs, trait_editors, class_of
-from trait_errors    import TraitError
-from trait_delegates import TraitEvent
+from .trait_errors    import TraitError
+from .trait_delegates import TraitEvent
 
 Trait = None  # Patched by 'traits.py' once class is defined!
 
@@ -63,7 +64,7 @@ class TraitHandler:
     }
 
     def validate ( self, object, name, value ):
-        raise TraitError, (
+        raise TraitError(
                  "The '%s' trait of %s instance has an unknown type. "
                  "Contact the developer to correct the problem." % (
                  name, class_of( object ) ) )
@@ -73,7 +74,7 @@ class TraitHandler:
                            self.validate( object, name, value ), default )
 
     def error ( self, object, name, value ):
-        raise TraitError, ( object, name, self.info(), value )
+        raise TraitError( object, name, self.info(), value )
 
     def info ( self ):
         return 'a legal value'
@@ -142,13 +143,16 @@ class TraitRange ( TraitHandler ):
 #-------------------------------------------------------------------------------
 
 class TraitString ( TraitHandler ):
-
     def __init__ ( self, dic = {}, **keywords ):
         self.minlen = dic.get( 'minlen', None )
+        if sys.version_info[0] >= 3:
+           maxintsize = sys.maxsize
+        else:
+           maxintsize = sys.maxint
         if self.minlen is None:
             self.minlen = max( 0, keywords.get( 'minlen', 0 ) )
         self.maxlen = max( self.minlen, (dic.get( 'maxlen', 0 ) or
-                                         keywords.get( 'maxlen', sys.maxint )) )
+                                         keywords.get( 'maxlen', maxintsize )) )
         self.regex  = (dic.get( 'regex', '' ) or keywords.get( 'regex', '' ) )
         if self.regex != '':
             self.match = re.compile( self.regex ).match
@@ -168,10 +172,14 @@ class TraitString ( TraitHandler ):
 
     def info ( self ):
         msg = ''
-        if (self.minlen != 0) and (self.maxlen != sys.maxint):
+        if sys.version_info[0] >= 3:
+           maxintsize = sys.maxsize
+        else:
+           maxintsize = sys.maxint
+        if (self.minlen != 0) and (self.maxlen != maxintsize):
             msg = ' between %d and %d characters long' % (
                   self.minlen, self.maxlen )
-        elif self.maxlen != sys.maxint:
+        elif self.maxlen != maxintsize:
             msg = ' <= %d characters long' % self.maxlen
         elif self.minlen != 0:
             msg = ' >= %d characters long' % self.minlen
@@ -188,7 +196,7 @@ class TraitString ( TraitHandler ):
 class TraitType ( TraitHandler ):
 
     def __init__ ( self, aType ):
-        if type( aType ) is not TypeType:
+        if type( aType ) is not type:
             aType = type( aType )
         self.aType = aType
         try:
@@ -304,7 +312,7 @@ class TraitClass ( TraitHandler ):
 
     def validate ( self, object, name, value ):
         try:
-            if type( value ) == StringType:
+            if type( value ) == str:
                 value = value.strip()
                 col   = value.rfind( '.' )
                 if col >= 0:
@@ -389,7 +397,7 @@ class TraitPrefixList ( TraitHandler ):
 
     def validate ( self, object, name, value ):
         try:
-            if not self.values_.has_key( value ):
+            if value not in self.values_:
                 match = None
                 n     = len( value )
                 for key in self.values:
@@ -423,7 +431,7 @@ class TraitMap ( TraitHandler ):
 
     def validate ( self, object, name, value ):
         try:
-            if self.map.has_key( value ):
+            if value in self.map:
                 return value
         except:
             pass
@@ -467,7 +475,7 @@ class TraitPrefixMap ( TraitMap ):
 
     def validate ( self, object, name, value ):
         try:
-            if not self._map.has_key( value ):
+            if not value in self._map:
                 match = None
                 n     = len( value )
                 for key in self.map.keys():
@@ -503,14 +511,14 @@ class TraitMapReverse ( TraitHandler ):
     def __init__ ( self, map ):
         self.map = rmap = {}
         for key, value in map.items():
-            if not rmap.has_key( value ):
+            if value not in rmap:
                 rmap[ value ] = [ key ]
             else:
                 rmap[ value ].append( key )
 
     def validate ( self, object, name, value ):
         try:
-            if self.map.has_key( value ):
+            if value in self.map:
                 return value
         except:
             pass
@@ -627,13 +635,13 @@ AnyValue = TraitAny()        # Allow any value for a trait
 class TraitReadOnly ( TraitHandler ):
 
     def validate ( self, object, name, value ):
-        no_key = (not object.__dict__.has_key( name ))
+        no_key = (name not in object.__dict__)
         if no_key:
             return value
         if ((value is not Undefined) and
             (no_key or (getattr( object, name ) is Undefined))):
             return value
-        raise TraitError, (
+        raise TraitError(
                  "The '%s' trait of %s instance is read only." % (
                  name, class_of( object ) ) )
 
@@ -647,6 +655,10 @@ class TraitReadOnly ( TraitHandler ):
 class TraitList ( TraitHandler ):
 
     info_trait = None
+    if sys.version_info[0] >= 3:
+       maxintsize = sys.maxsize
+    else:
+       maxintsize = sys.maxint
 
     def __init__ ( self, trait = None, min_items = None, max_items = None,
                          items = True ):
@@ -656,7 +668,7 @@ class TraitList ( TraitHandler ):
             trait = Trait( trait )
         self.item_trait = trait
         self.min_items  = min_items or 0
-        self.max_items  = max_items or sys.maxint
+        self.max_items  = max_items or maxintsize
         self.items      = items
 
     def validate ( self, object, name, value ):
@@ -673,12 +685,12 @@ class TraitList ( TraitHandler ):
 
     def info ( self ):
         if self.min_items == 0:
-            if self.max_items == sys.maxint:
+            if self.max_items == maxintsize:
                 size = 'of items'
             else:
                 size = ' of at most %d items' % self.max_items
         else:
-            if self.max_items == sys.maxint:
+            if self.max_items == maxintsize:
                 size = ' of at least %d items' % self.min_items
             else:
                 size = ' of from %d to %d items' % (
@@ -708,7 +720,7 @@ class TraitListObject ( list ):
                                             self.object, self.name, value )  )
             if self.name_items is not None:
                 setattr( self.object, self.name_items, 0 )
-        except TraitError, excp:
+        except TraitError as excp:
             excp.set_prefix( 'Each element of the' )
             raise excp
 
@@ -725,7 +737,7 @@ class TraitListObject ( list ):
                 if self.name_items is not None:
                     setattr( self.object, self.name_items, 0 )
                 return
-            except TraitError, excp:
+            except TraitError as excp:
                 excp.set_prefix( 'Each element of the' )
                 raise excp
         self.len_error( len( self ) + delta )
@@ -755,7 +767,7 @@ class TraitListObject ( list ):
                 if self.name_items is not None:
                     setattr( self.object, self.name_items, 0 )
                 return
-            except TraitError, excp:
+            except TraitError as excp:
                 excp.set_prefix( 'Each element of the' )
                 raise excp
         self.len_error( len( self ) + 1 )
@@ -772,7 +784,7 @@ class TraitListObject ( list ):
                 if self.name_items is not None:
                     setattr( self.object, self.name_items, 0 )
                 return
-            except TraitError, excp:
+            except TraitError as excp:
                 excp.set_prefix( 'The elements of the' )
                 raise excp
         self.len_error( len( self ) + len( xlist ) )
@@ -786,7 +798,7 @@ class TraitListObject ( list ):
             self.len_error( len( self ) - 1 )
 
     def len_error ( self, len ):
-        raise TraitError, ( "The '%s' trait of %s instance must be %s, "
+        raise TraitError( "The '%s' trait of %s instance must be %s, "
                   "but you attempted to change its length to %d element%s." % (
                   self.name, class_of( self.object ), self.trait.info(),
                   len, 's'[ len == 1: ] ) )

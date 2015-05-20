@@ -20,19 +20,18 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from __future__ import division # confidence high
+from __future__ import absolute_import, division # confidence high
 
-from types          import StringType, ListType, TupleType
-from trait_base     import SequenceTypes
-from trait_handlers import TraitPrefixList
-from traits         import Trait, HasTraits, ReadOnly
-from string         import lowercase, uppercase
+from .trait_base     import SequenceTypes
+from .trait_handlers import TraitPrefixList
+from .traits         import Trait, HasTraits, ReadOnly
+from string          import ascii_lowercase, ascii_uppercase
 
 #-------------------------------------------------------------------------------
 #  Trait definitions:
 #-------------------------------------------------------------------------------
 
-none_or_string = Trait( None, None, StringType )
+none_or_string = Trait( None, None, str )
 
 true_trait  = Trait( 'true', {
                      'true':  1, 't': 1, 'yes': 1, 'y': 1, 'on':  1, 1: 1,
@@ -44,7 +43,7 @@ style_trait = Trait( None, None,
 
 object_trait = Trait( None, None, HasTraits )
 
-basic_sequence_types = [ ListType, TupleType ]
+basic_sequence_types = [ list, tuple ]
 
 #-------------------------------------------------------------------------------
 #  'TraitSheetHandler' class:
@@ -203,7 +202,7 @@ class TraitGroupItem ( HasTraits ):
         if (len( value ) == 1) and (type( value[0] ) in SequenceTypes):
             value = value[0]
         for data in value:
-            if type( data ) is StringType:
+            if type( data ) is str:
                 if self.name is None:
                     self.name = data
                 elif self.label is None:
@@ -242,9 +241,9 @@ class TraitGroupItem ( HasTraits ):
         result     = ''
         last_lower = 0
         for c in name:
-            if (c in uppercase) and last_lower:
+            if (c in ascii_uppercase) and last_lower:
                 result += ' '
-            last_lower = (c in lowercase)
+            last_lower = (c in ascii_lowercase)
             result    += c
         return result
 
@@ -345,7 +344,7 @@ class MergeTraitGroups:
             return 'tg'
         if (isinstance( group, TraitGroupList ) or
             (type( group ) in basic_sequence_types)):
-            if (len( group ) == 0) or (type( group[0] ) is StringType):
+            if (len( group ) == 0) or (type( group[0] ) is str):
                 return 'strl'
             return 'tgl'
         return 'str'
