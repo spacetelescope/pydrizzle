@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function # confidence me
 from .drutil import DEFAULT_IDCDIR
 from stsci.tools import fileutil, wcsutil, asnutil
 
-import string, os, types, sys
+import os, types, sys
 import shutil
 from . import arrdriz
 from . import outputimage
@@ -906,8 +906,8 @@ class SkyField:
         # Converts(if necessary), then updates the RA and Dec.
         _ra,_dec = None,None
         if ra != None:
-            if string.find(repr(ra),':') > 0:
-                _hms = string.split(repr(ra)[1:-1],':')
+            if repr(ra).find(':') > 0:
+                _hms = repr(ra)[1:-1].split(':')
                 if _hms[0][0] == '-': _sign = -1
                 else: _sign = 1
 
@@ -918,8 +918,8 @@ class SkyField:
             self.ra = _ra
 
         if dec != None:
-            if string.find(repr(dec),':') > 0:
-                _dms = string.split(repr(dec)[1:-1],':')
+            if repr(dec).find(':') > 0:
+                _dms = repr(dec)[1:-1].split(':')
                 if _dms[0][0] == '-': _sign = -1
                 else: _sign = 1
 

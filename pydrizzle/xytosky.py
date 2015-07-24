@@ -1,5 +1,5 @@
 from __future__ import absolute_import, division, print_function # confidence high
-import string, copy, os
+import copy, os
 
 import pyfits
 import numpy as np
@@ -64,7 +64,7 @@ def XYtoSky_pars(input,x=None,y=None,coords=None,colnames=None,linear=yes,
             else:
                 _clist = ['1','2']
             # Convert strings to ints for use in parsing the lines of the file
-            for n in range(len(_clist)): _clist[n] = string.atoi(_clist[n]) - 1
+            for n in range(len(_clist)): _clist[n] = int(_clist[n]) - 1
             # Read in lines and convert appropriate columns to X,Y lists
             for line in _lines:
                 line = line.strip()
@@ -73,8 +73,8 @@ def XYtoSky_pars(input,x=None,y=None,coords=None,colnames=None,linear=yes,
                 if len(line) > 0 and line[0] != '#':
                     _xy = line.split()
                     # Append floating point value from specified column
-                    x = string.atof(_xy[_clist[0]])
-                    y = string.atof(_xy[_clist[1]])
+                    x = float(_xy[_clist[0]])
+                    y = float(_xy[_clist[1]])
                     xy.append([x,y])
 
     #
@@ -203,7 +203,7 @@ def XYtoSky(input, pos, idckey='IDCTAB', linear=yes, verbose=no):
     """
 
     # Start by making sure we have a valid extension specification.
-    _insplit = string.split(input,'[')
+    _insplit = input.split('[')
     if len(_insplit) == 1:
         raise IOError('No extension specified for input image!')
 

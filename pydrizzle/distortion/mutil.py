@@ -1,7 +1,6 @@
-from __future__ import division # confidence high
+from __future__ import division, print_function # confidence high
 from stsci.tools import fileutil, wcsutil
 import numpy as np
-import string
 import calendar
 import datetime
 
@@ -34,7 +33,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
  # Return a default geometry model if no IDCTAB filename
     # is given.  This model will not distort the data in any way.
     if tabname == None:
-        print 'Warning: No IDCTAB specified! No distortion correction will be applied.'
+        print('Warning: No IDCTAB specified! No distortion correction will be applied.')
         return defaultModel()
 
     # Implement default values for filters here to avoid the default
@@ -69,7 +68,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
     # First, check to see if the TDD coeffs are present, if not, complain and quit
     skew_coeffs = None
     if 'TDD_DATE' in phdr:
-        print 'Reading TDD coefficients from ',tabname
+        print('Reading TDD coefficients from ',tabname)
         skew_coeffs = read_tdd_coeffs(phdr)
         # Using coefficients read in from IDCTAB Primary header
         #skew_coeffs = {'TDD_A0':phdr['TDD_A0'],'TDD_A1':phdr["TDD_A1"],
@@ -154,7 +153,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
             detchip = 1
 
         if 'DIRECTION' in colnames:
-            direct = string.strip(string.lower(ftab[1].data.field('DIRECTION')[i]))
+            direct = ftab[1].data.field('DIRECTION')[i].lower().strip()
         else:
             direct = 'forward'
 
@@ -171,7 +170,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
         del ftab
         raise LookupError,err_str
     else:
-        print '- IDCTAB: Distortion model from row',str(row+1),'for chip',detchip,':',filter1.strip(),'and',filter2.strip()
+        print('- IDCTAB: Distortion model from row',str(row+1),'for chip',detchip,':',filter1.strip(),'and',filter2.strip())
 
     # Read in V2REF and V3REF: this can either come from current table,
     # or from an OFFTAB if time-dependent (i.e., for WFPC2)
@@ -237,7 +236,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
         fy *= refpix['PSCALE']
 
     if tddcorr:
-        print " *** Computing ACS Time Dependent Distortion Coefficients *** "
+        print(" *** Computing ACS Time Dependent Distortion Coefficients *** ")
         alpha,beta = compute_wfc_tdd_coeffs(date, skew_coeffs)
         fx,fy = apply_wfc_tdd_coeffs(fx, fy, alpha, beta)
         refpix['TDDALPHA'] = alpha
@@ -329,12 +328,12 @@ def readOfftab(offtab, date, chip=None):
     del ftab
 
     if row_start == None and row_end == None:
-        print 'Row corresponding to DETCHIP of ',detchip,' was not found!'
+        print('Row corresponding to DETCHIP of ',detchip,' was not found!')
         raise LookupError
     elif row_start == None:
-        print '- OFFTAB: Offset defined by row',str(row_end+1)
+        print('- OFFTAB: Offset defined by row',str(row_end+1))
     else:
-        print '- OFFTAB: Offset interpolated from rows',str(row_start+1),'and',str(row_end+1)
+        print('- OFFTAB: Offset interpolated from rows',str(row_start+1),'and',str(row_end+1))
 
     # Now, do the interpolation for v2ref, v3ref, and theta
     if row_start == None or row_end == row_start:
@@ -427,7 +426,7 @@ def readTraugerTable(idcfile,wavelength):
     ifile = open(idcfile,'r')
     # Search for the first line of the coefficients
     _line = fileutil.rAsciiLine(ifile)
-    while string.lower(_line[:7]) != 'trauger':
+    while _line[:7].lower() != 'trauger':
         _line = fileutil.rAsciiLine(ifile)
     # Read in each row of coefficients,split them into their values,
     # and convert them into cubic coefficients based on
@@ -437,7 +436,7 @@ def readTraugerTable(idcfile,wavelength):
     while j < 20:
         _line = fileutil.rAsciiLine(ifile)
         if _line == '': continue
-        _lc = string.split(_line)
+        _lc = _line.split()
         if j < 10:
             a_coeffs[j] = float(_lc[0])+float(_lc[1])*(indx-1.5)+float(_lc[2])*(indx-1.5)**2
         else:
@@ -504,20 +503,20 @@ def readCubicTable(idcfile):
     # split them into their values, and create a list for A coefficients
     # and another list for the B coefficients
     _line = fileutil.rAsciiLine(ifile)
-    a_coeffs = string.split(_line)
+    a_coeffs = _line.split()
 
     x0 = float(a_coeffs[0])
     _line = fileutil.rAsciiLine(ifile)
-    a_coeffs[len(a_coeffs):] = string.split(_line)
+    a_coeffs[len(a_coeffs):] = _line.split()
     # Scale coefficients for use within PyDrizzle
     for i in range(len(a_coeffs)):
         a_coeffs[i] = float(a_coeffs[i])
 
     _line = fileutil.rAsciiLine(ifile)
-    b_coeffs = string.split(_line)
+    b_coeffs = _line.split()
     y0 = float(b_coeffs[0])
     _line = fileutil.rAsciiLine(ifile)
-    b_coeffs[len(b_coeffs):] = string.split(_line)
+    b_coeffs[len(b_coeffs):] = _line.split()
     # Scale coefficients for use within PyDrizzle
     for i in range(len(b_coeffs)):
         b_coeffs[i] = float(b_coeffs[i])
@@ -660,7 +659,7 @@ def compute_wfc_tdd_coeffs(dateobs,skew_coeffs):
             err_str += "         The pre-SM4 time-dependent skew solution will be used by default.\n"
             err_str += "         Please update IDCTAB with new reference file from HST archive.   \n"
             err_str +=  "------------------------------------------------------------------------  \n"
-            print err_str
+            print(err_str)
         #alpha = 0.095 + 0.090*(rday-dday)/2.5
         #beta = -0.029 - 0.030*(rday-dday)/2.5
         # Using default pre-SM4 coefficients

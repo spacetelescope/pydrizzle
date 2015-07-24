@@ -30,7 +30,7 @@ from __future__ import division, print_function # confidence high
 #                   added output filename as input parameter to 'buildMask'
 #                   functions. WJH
 #
-import string,os,types
+import os, types
 
 from stsci.tools import fileutil, readgeis
 

@@ -274,7 +274,7 @@ def readTraugerTable(idcfile,wavelength):
     ifile = open(idcfile,'r')
     # Search for the first line of the coefficients
     _line = fileutil.rAsciiLine(ifile)
-    while string.lower(_line[:7]) != 'trauger':
+    while _line[:7].lower() != 'trauger':
         _line = fileutil.rAsciiLine(ifile)
     # Read in each row of coefficients,split them into their values,
     # and convert them into cubic coefficients based on
@@ -284,7 +284,7 @@ def readTraugerTable(idcfile,wavelength):
     while j < 20:
         _line = fileutil.rAsciiLine(ifile)
         if _line == '': continue
-        _lc = string.split(_line)
+        _lc = _line.split()
         if j < 10:
             a_coeffs[j] = float(_lc[0])+float(_lc[1])*(indx-1.5)+float(_lc[2])*(indx-1.5)**2
         else:

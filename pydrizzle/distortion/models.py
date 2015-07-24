@@ -156,7 +156,7 @@ class GeometryModel:
         elif self.norder==5:
             lines.append('quintic\n')
         else:
-            raise ValueError, "Drizzle cannot handle poly distortions of order %d"%self.norder
+            raise ValueError("Drizzle cannot handle poly distortions of order %d"%self.norder)
 
         str = '%16.8f %16.8g %16.8g %16.8g %16.8g \n'% (x0,cx[1,1],cx[1,0],cx[2,2],cx[2,1])
         lines.append(str)

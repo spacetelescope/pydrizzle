@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function
  # confidence medium
-import types,string,os,copy
-from math import ceil,floor
+import types, os, copy
+from math import ceil, floor
 
 # Import PyDrizzle utility modules
 from stsci.tools import fileutil, wcsutil
@@ -112,7 +112,7 @@ class ObsGeometry:
 
             # Based on the filetype, open the correct geometry model
             if idckey != None:
-                ikey = string.lower(idckey)
+                ikey = idckey.lower()
             else:
                 ikey = 'idctab'
 

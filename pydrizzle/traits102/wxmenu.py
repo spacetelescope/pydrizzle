@@ -41,6 +41,22 @@ import wxPython.wx as wx
 import re
 import sys
 
+if PY3K:
+    import builtins
+    exec_ = getattr(builtins, "exec")
+else:
+    def exec_(_code_, _globs_=None, _locs_=None):
+        """Execute code in a namespace."""
+        if _globs_ is None:
+            frame = sys._getframe(1)
+            _globs_ = frame.f_globals
+            if _locs_ is None:
+                _locs_ = frame.f_locals
+            del frame
+        elif _locs_ is None:
+            _locs_ = _globs_
+        exec("exec _code_ in _globs_, _locs_")
+
 #===============================================================================
 #  Constants:
 #===============================================================================
@@ -154,12 +170,8 @@ class MakeMenu:
                             handler = null_handler
                 else:
                     try:
-                        if sys.version_info[0] >= 3:
-                           exec('def handler(event,self=self.owner):\n%s\n' % (
-                                self.get_body( indented ), ), globals())
-                        else:
-                           exec 'def handler(event,self=self.owner):\n%s\n' % (
-                                 self.get_body( indented ), ) in globals()
+                        exec_('def handler(event,self=self.owner):\n%s\n' % 
+                              (self.get_body(indented), ), _globs_=globals())
                     except:
                         handler = null_handler
                 wx.EVT_MENU( self.window, cur_id, handler )
