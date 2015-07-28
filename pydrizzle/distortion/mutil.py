@@ -62,7 +62,7 @@ def readIDCtab (tabname, chip=1, date=None, direction='forward',
         err_str += "present run will continue using the old coefficients provided in         \n"
         err_str += "the Dither Package (ca. 1995-1998).                                      \n"
         err_str += "------------------------------------------------------------------------ \n"
-        raise IOError,err_str
+        raise IOError(err_str)
 
     phdr = ftab['PRIMARY'].header
     # First, check to see if the TDD coeffs are present, if not, complain and quit
