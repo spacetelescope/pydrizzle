@@ -526,30 +526,21 @@ def update_member_names(oldasndict, pydr_input):
     be replaced by 'u9600201m_c0h' making sure that a MEf file is passed
     as an input and not the corresponding GEIS file.
     """
-    import sys
     omembers = oldasndict['members'].copy()
     nmembers = {}
     translated_names = [f.split('.fits')[0] for f in pydr_input]
 
     newkeys = [fileutil.buildNewRootname(file) for file in pydr_input]
 
-    if sys.version_info[0] < 3:
-        iterator = iter(omembers.items())
-    else:
-        iterator = omembers.items()
-
-    while True:
-        try:
-            okey,oval = next(iterator)
-            if okey in newkeys:
-                nkey = pydr_input[newkeys.index(okey)]
-                nmembers[nkey.split('.fits')[0]] = oval
-        except StopIteration:
-            break
-    oldasndict.pop('members')
+    for okey, oval in omembers.items():
+        if okey in newkeys:
+            nkey = pydr_input[newkeys.index(okey)]
+            nmembers[nkey.split('.fits')[0]] = oval
+    
     # replace should be always True to cover the case when flt files were removed
     # and the case when names were translated
 
+    oldasndict.pop('members')
     oldasndict.update(members=nmembers, replace=True)
     oldasndict['order'] = translated_names
     return oldasndict
