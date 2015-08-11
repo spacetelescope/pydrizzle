@@ -160,7 +160,7 @@ class Pattern(object):
                 if 'extname' in _fext.header and _fext.header['extname'] == 'SCI':
                     _numsci += 1
 
-            if _extn > 0:
+            if _extn and _extn > 0:
                 # Append correct extension/chip/group header to PRIMARY...
                 for _card in fileutil.getExtn(_handle,_extn).header.ascard:
                     _hdr.ascard.append(_card)
