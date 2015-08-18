@@ -484,7 +484,7 @@ More help on SkyField objects and their parameters can be obtained using:
                     _mask = plist['driz_mask']
 
                 # Check to see whether there is a mask_array at all to use...
-                if type(_mask,types) == type('') :
+                if type(_mask) == type('') :
                     if _mask != None and _mask != '':
                         _wht_handle = fileutil.openImage(_mask,mode='readonly',memmap=0)
                         _inwht = _wht_handle[0].data.astype(np.float32)
