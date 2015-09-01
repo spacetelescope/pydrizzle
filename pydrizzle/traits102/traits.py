@@ -853,7 +853,7 @@ class HasTraits:
                     traits[ key ] = Trait( trait )
 
         # Make sure the prefixes are sorted from longest to shortest:
-        class_list.sort( lambda x, y: len( y ) - len( x ) )
+        class_list.sort( key=lambda x: len( x ), reverse=True )
 
         # Save the result:
         traits[ '**' ] = class_list
