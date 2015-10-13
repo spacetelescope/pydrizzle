@@ -34,7 +34,7 @@ import os, types
 
 from stsci.tools import fileutil, readgeis
 
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 
 yes = True

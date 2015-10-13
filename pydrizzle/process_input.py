@@ -1,6 +1,6 @@
 from __future__ import division, print_function # confidence high
 from stsci.tools import parseinput, fileutil, readgeis, asnutil, irafglob
-import pyfits
+from astropy.io import fits as pyfits
 import os
 
 from . import makewcs

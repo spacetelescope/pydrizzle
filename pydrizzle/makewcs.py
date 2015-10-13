@@ -59,7 +59,7 @@ numerixenv.check()
 #import iraf
 from math import *
 import os.path
-import pyfits
+from astropy.io import fits as pyfits
 
 from . import drutil
 from .distortion import models, mutil

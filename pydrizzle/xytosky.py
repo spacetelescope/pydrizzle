@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function # confidence high
 import copy, os
 
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 from numpy import char as C
 from math import *

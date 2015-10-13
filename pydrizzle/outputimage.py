@@ -1,6 +1,6 @@
 from __future__ import division, print_function # confidence medium
 import types
-import pyfits
+from astropy.io import fits as pyfits
 from stsci.tools import fileutil, readgeis
 
 yes = True

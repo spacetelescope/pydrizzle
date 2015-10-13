@@ -14,7 +14,7 @@ from .__init__ import __version__
 #import buildasn
 #import p_m_input
 
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 
 yes = True  # 1
@@ -275,7 +275,7 @@ More help on SkyField objects and their parameters can be obtained using:
         # Setup the versions info dictionary for output to PRIMARY header
         # The keys will be used as the name reported in the header, as-is
         #
-        _versions = {'PyDrizzle':__version__,'PyFITS':pyfits.__version__,'Numpy':np.__version__}
+        _versions = {'PyDrizzle':__version__,'Astropy':astropy.__version__,'Numpy':np.__version__}
 
         # Set parameters for each input and run drizzle on it here.
 
